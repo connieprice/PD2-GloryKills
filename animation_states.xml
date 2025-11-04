@@ -1,40 +1,35 @@
 <?xml version="1.0"?>
 <tweaks>
 
-<!-- add fp execution state -->
-	<tweak version="2" name="anims/fps/fps_spawn" extension="animation_states">
+<!-- add fp execution state -->	
+	<tweak version="2" name="anims/units/enemies/cop/std" extension="animation_states">
 		<search>
 			<xml/>
-			<state name="fps"/>
+			<state name="std"/>
 		</search>
+		
 		<target mode="attach">
-		
-			<to name="execution" redirect="fps/unarmed/execution"/>
-		
+			<to name="execution" redirect="std/stand/execution"/>
 		</target>
-	</tweak> 
+	</tweak>
 	
 <!-- define anim to play during execution state -->
-	<tweak version="2" name="anims/fps/fps_spawn" extension="animation_states">
+	<tweak version="2" name="anims/units/enemies/cop/std" extension="animation_states">
 		<search>
 			<xml/>
 		</search>
+		
 		<target mode="attach">
-			
-			<state name="fps/unarmed/execution" type="once" segment="base" speed="1.0">
+			<state name="std/stand/execution" type="once" segment="base" speed="1.0">
 				<anim name="heister_execution"/>
-				<!--
 				<keys>
 					<key at="enter" callback="anim_start_execution" class_name="base"/>
 					<key at="exit" callback="anim_stop_execution" class_name="base"/>
 				</keys>
-				-->
-				<exit name="fps/empty"/>
+				<exit name="std/stand/still/idle/look"/>
 			</state>
-			
 		</target>
-	</tweak> 
-	
+	</tweak>
 	
 	
 <!-- add redirects to point to the new anim state -->

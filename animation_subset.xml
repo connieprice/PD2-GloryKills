@@ -2,13 +2,13 @@
 <tweaks>
 	
 <!-- define file for the fp animation to play -->
-	<tweak version="2" name="anims/fps/fps_spawn" extension="animation_subset">
+	<tweak version="2" name="anims/units/enemies/cop/std" extension="animation_subset">
 		<search>
 			<xml/>
 		</search>
 		
 		<target mode="attach">
-			<anim name="heister_execution" file="anims/fps/unarmed/heister_execution" blend_set="all"/>
+			<anim name="heister_execution" file="anims/shared/rifle/generic/heister_execution" blend_set="all"/>
 		</target>
 	</tweak>
 

@@ -1,14 +1,22 @@
-GloryKills = {}
-
+GloryKills = {
+	
+	fp_unit = nil, -- the fp unit
+	unit = nil, -- the 3p unit
+	head_obj = nil, -- object
+	delayed_events = {}
+}
+GloryKills.HUSK_NAMES = {
+	wild = "units/pd2_dlc_wild/characters/npc_criminals_wild_1/player_criminal_wild_husk",
+	joy = "units/pd2_dlc_joy/characters/npc_criminals_joy_1/player_criminal_joy_husk"
+}
 -- copied this from third person mod. thanks hoppip
 function GloryKills:spawn_third_unit(unit)
-	do return end
+	local SETTING_IMMERSIVE_FIRST_PERSON = true
+	local SETTING_CUSTOM_WEAPONS = false
+	local SETTING_START_IN_THIRD_PERSON = false
 	
 	local unit_ids = Idstring("unit")
-	local husk_names = {
-		wild = "units/pd2_dlc_wild/characters/npc_criminals_wild_1/player_criminal_wild_husk",
-		joy = "units/pd2_dlc_joy/characters/npc_criminals_joy_1/player_criminal_joy_husk"
-	} -- thanks Overkill >.<
+	
 	
 	local player = unit or managers.player:local_player()
 	if not player then
@@ -19,7 +27,7 @@ function GloryKills:spawn_third_unit(unit)
 	local pos = player_movement:m_pos()
 	local rot = player_movement:m_head_rot()
 	local char_id = player_peer:character_id()
-	local unit_name = husk_names[char_id] or tweak_data.blackmarket.characters[char_id].npc_unit:gsub("(.+)/npc_", "%1/player_") .. "_husk"
+	local unit_name = self.HUSK_NAMES[char_id] or tweak_data.blackmarket.characters[char_id].npc_unit:gsub("(.+)/npc_", "%1/player_") .. "_husk"
 	local unit_name_ids = Idstring(unit_name)
 
 	if not DB:has(unit_ids, unit_name_ids) then
@@ -34,11 +42,11 @@ function GloryKills:spawn_third_unit(unit)
 	Network:detach_unit(self.unit)
 
 	-- The third person unit should be destroyed whenever the first person unit is destroyed
-	player:base().pre_destroy = function (self, ...)
-		if alive(ThirdPerson.unit) then
-			World:delete_unit(ThirdPerson.unit)
+	player:base().pre_destroy = function (_self, ...)
+		if alive(self.unit) then
+			World:delete_unit(self.unit)
 		end
-		PlayerBase.pre_destroy(self, ...)
+		PlayerBase.pre_destroy(_self, ...)
 	end
 
 	local unit_base = self.unit:base()
@@ -62,27 +70,27 @@ function GloryKills:spawn_third_unit(unit)
 	unit_movement.set_need_revive = function (self, need_revive) self._need_revive = need_revive end
 
 	local look_vec_modified = Vector3()
-	unit_movement.update = function (self, ...)
-		HuskPlayerMovement.update(self, ...)
-		if alive(ThirdPerson.fp_unit) then
+	unit_movement.update = function (_self, ...)
+		HuskPlayerMovement.update(_self, ...)
+		if alive(self.fp_unit) then
 			-- correct aiming direction so that lasers are approximately the same in first and third person
-			mvector3.set(look_vec_modified, ThirdPerson.fp_unit:camera():forward())
-			mvector3.rotate_with(look_vec_modified, Rotation(ThirdPerson.fp_unit:camera():rotation():z(), 1))
-			self:set_look_dir_instant(look_vec_modified)
+			mvector3.set(look_vec_modified, self.fp_unit:camera():forward())
+			mvector3.rotate_with(look_vec_modified, Rotation(self.fp_unit:camera():rotation():z(), 1))
+			_self:set_look_dir_instant(look_vec_modified)
 		end
 	end
 
-	unit_movement.sync_action_walk_nav_point = function (self, pos, speed, action)
-		self._movement_path = self._movement_path or {}
-		self._movement_history = self._movement_history or {}
+	unit_movement.sync_action_walk_nav_point = function (_self, pos, speed, action)
+		_self._movement_path = _self._movement_path or {}
+		_self._movement_history = _self._movement_history or {}
 
-		local state = alive(ThirdPerson.fp_unit) and ThirdPerson.fp_unit:movement():current_state()
+		local state = alive(self.fp_unit) and self.fp_unit:movement():current_state()
 		if not state then
 			return
 		end
 
-		local path_len = #self._movement_path
-		pos = pos or path_len > 0 and self._movement_path[path_len].pos or mvector3.copy(self:m_pos())
+		local path_len = #_self._movement_path
+		pos = pos or path_len > 0 and _self._movement_path[path_len].pos or mvector3.copy(_self:m_pos())
 
 		local type = state._state_data.on_zipline and "zipline" or (not state._gnd_ray or state._is_jumping) and "air" or "ground"
 
@@ -92,26 +100,26 @@ function GloryKills:spawn_third_unit(unit)
 			type = type,
 			action = {action}
 		}
-		table.insert(self._movement_path, node)
-		table.insert(self._movement_history, node)
-		local len = #self._movement_history
+		table.insert(_self._movement_path, node)
+		table.insert(_self._movement_history, node)
+		local len = #_self._movement_history
 		if len > 1 then
-			self:_determine_node_action(#self._movement_history, node)
+			_self:_determine_node_action(#_self._movement_history, node)
 		end
-		for i = 1, #self._movement_history - tweak_data.network.player_path_history, 1 do
-			table.remove(self._movement_history, 1)
+		for i = 1, #_self._movement_history - tweak_data.network.player_path_history, 1 do
+			table.remove(_self._movement_history, 1)
 		end
 	end
 
 	local hide_vec = Vector3(0, 0, -10000)
-	unit_movement.set_position = function (self, pos)
-		if alive(ThirdPerson.fp_unit) and ThirdPerson.fp_unit:camera():first_person() then
-			self._unit:set_position(hide_vec)
+	unit_movement.set_position = function (_self, pos)
+		if alive(self.fp_unit) and self.fp_unit:camera():first_person() then
+			_self._unit:set_position(hide_vec)
 		else
 			-- partial fix for movement sync, not perfect as it overrides some movement animations like jumping
-			pos = alive(ThirdPerson.fp_unit) and ThirdPerson.fp_unit:movement():m_pos() or pos
-			self._unit:set_position(pos)
-			mvector3.set(self._m_pos, pos)
+			pos = alive(self.fp_unit) and self.fp_unit:movement():m_pos() or pos
+			_self._unit:set_position(pos)
+			mvector3.set(_self._m_pos, pos)
 		end
 	end
 
@@ -135,29 +143,29 @@ function GloryKills:spawn_third_unit(unit)
 	end
 
 	unit_inventory.set_mask_visibility = function (self, state)
-		HuskPlayerInventory.set_mask_visibility(self, not ThirdPerson.settings.immersive_first_person and state)
+		HuskPlayerInventory.set_mask_visibility(self, not SETTING_CUSTOM_WEAPONS and state)
 	end
 
 	-- adjust weapon switch to support custom weapons
 	local default_weaps = { "wpn_fps_pis_g17_npc", "wpn_fps_ass_amcar_npc" }
-	unit_inventory._perform_switch_equipped_weapon = function (self, weap_index, blueprint_string, cosmetics_string, peer)
+	unit_inventory._perform_switch_equipped_weapon = function (_self, weap_index, blueprint_string, cosmetics_string, peer)
 		self._checked_weapons = self._checked_weapons or {}
 		if not self._checked_weapons[weap_index] then
-			local equipped = ThirdPerson.fp_unit:inventory():equipped_unit()
+			local equipped = self.fp_unit:inventory():equipped_unit()
 			local checked_weap = {
 				name = equipped:base()._factory_id and equipped:base()._factory_id .. "_npc" or "wpn_fps_ass_amcar_npc",
-				cosmetics_string = cosmetics_string or self:cosmetics_string_from_peer(peer, checked_weap.name),
+				cosmetics_string = cosmetics_string or _self:cosmetics_string_from_peer(peer, checked_weap.name),
 				blueprint_string = blueprint_string or equipped:blueprint_to_string()
 			}
 
 			local factory_weapon = tweak_data.weapon.factory[checked_weap.name]
-			if not factory_weapon or factory_weapon.custom and not ThirdPerson.settings.custom_weapons then
+			if not factory_weapon or factory_weapon.custom and not SETTING_CUSTOM_WEAPONS then
 				local weapon = tweak_data.weapon[managers.weapon_factory:get_weapon_id_by_factory_id(equipped:base()._factory_id or "wpn_fps_ass_amcar_npc")]
 				local based_on = weapon and weapon.based_on and tweak_data.weapon[weapon.based_on]
 				local based_on_name = based_on and tweak_data.upgrades.definitions[weapon.based_on] and tweak_data.upgrades.definitions[weapon.based_on].factory_id
 				local new_name = based_on_name and based_on.use_data.selection_index == weapon.use_data.selection_index and (based_on_name .. "_npc") or weapon and default_weaps[weapon.use_data.selection_index] or default_weaps[1]
 
-				ThirdPerson:log("Replaced custom weapon " .. checked_weap.name .. " with " .. new_name)
+				--ThirdPerson:log("Replaced custom weapon " .. checked_weap.name .. " with " .. new_name)
 
 				checked_weap.name = new_name
 				checked_weap.blueprint_string = managers.weapon_factory:blueprint_to_string(checked_weap.name, managers.weapon_factory:get_default_blueprint_by_factory_id(checked_weap.name))
@@ -169,7 +177,7 @@ function GloryKills:spawn_third_unit(unit)
 
 		local checked_weap = self._checked_weapons[weap_index]
 		if checked_weap then
-			self:add_unit_by_factory_name(checked_weap.name, true, true, checked_weap.blueprint_string, checked_weap.cosmetics_string)
+			_self:add_unit_by_factory_name(checked_weap.name, true, true, checked_weap.blueprint_string, checked_weap.cosmetics_string)
 		end
 	end
 
@@ -184,7 +192,7 @@ function GloryKills:spawn_third_unit(unit)
 	self.unit:damage():run_sequence_simple(managers.blackmarket:character_sequence_by_character_id(player_peer:character_id(), player_peer:id()))
 
 	unit_movement:set_character_anim_variables()
-	if ThirdPerson.settings.immersive_first_person then
+	if SETTING_IMMERSIVE_FIRST_PERSON then
 		unit_movement:set_head_visibility(false)
 	end
 
@@ -204,11 +212,13 @@ function GloryKills:spawn_third_unit(unit)
 		self.delayed_events = {}
 	end
 
-	if self.settings.start_in_tp then
+	--[[
+	if SETTING_START_IN_THIRD_PERSON then
 		player:camera():set_third_person()
 	else
 		player:camera()._toggled_fp = true
 	end
+	--]]
 
 	-- Unregister from groupai manager so it doesnt count as an actual criminal
 	managers.groupai:state():unregister_criminal(self.unit)

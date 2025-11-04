@@ -7,7 +7,7 @@
 	-->
 	
 	<AddFiles directory="assets">
-		<animation path="anims/fps/unarmed/heister_execution" />
+		<animation path="anims/shared/rifle/generic/heister_execution" />
 		<animation path="anims/shared/rifle/generic/gen_death_execution" />
 	</AddFiles>
 	

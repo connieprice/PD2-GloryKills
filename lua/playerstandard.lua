@@ -9,6 +9,9 @@ the cop animation is 71
 
 test triggering death anim from calling listeners
 
+force stand before entering melee
+check zipline/other invalid actions
+
 check if custom state syncing will crash unmodded clients
 --]]
 
