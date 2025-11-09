@@ -161,6 +161,8 @@ _G.execute_unit = function(unit,col_ray)
 end
 
 
+--local barfool,barfoo2
+
 --local mvec_1 = Vector3()
 --local mvec_2 = Vector3()
 _G.testhook = function(self, t, input)
@@ -173,7 +175,7 @@ _G.testhook = function(self, t, input)
 	
 	local action_forbidden = not self:_melee_repeat_allowed() or self._use_item_expire_t or self:_changing_weapon() or self:_interacting() or self:_is_throwing_projectile() or self:_is_using_bipod() or self:is_shooting_count()
 	-- extra conditions specific to the execution
-	or self:in_air() or self:ducking() or self:on_ladder() or self:on_zipline()
+	or self:in_air() or self:ducking() or self:on_ladder() or self:_on_zipline()
 	
 	
 	
@@ -194,8 +196,11 @@ _G.testhook = function(self, t, input)
 			-- but without the vfx/sfx,
 			-- only the network
 				
+				
+				
+				
 				local attack_data = {
-					variant = "melee",
+					variant = "execution",
 					damage = dmg_ext._HEALTH_INIT or 10000000,
 					damage_effect = 0,
 					attacker_unit = self._unit,
@@ -207,11 +212,12 @@ _G.testhook = function(self, t, input)
 				--local result = _G.copdamage_execute_melee(dmg_ext,attack_data)
 				--redirect
 				--dmg_ext:_on_damage_received(attack_data)
-				
+								
+				local result = dmg_ext:damage_melee(attack_data)
+				--[[
 				dmg_ext:die(attack_data)
 				
 				foo3 = col_ray
-			
 				local damage_info = { -- for triggering the anim
 					damage = attack_data.damage,
 					variant = "melee",
@@ -223,10 +229,11 @@ _G.testhook = function(self, t, input)
 					}
 				}
 				dmg_ext:_call_listeners(damage_info)
+				--]]
 					
 				
-				--if result and result.type == "death" then
-				if dmg_ext:dead() then
+--				if dmg_ext:dead() then
+				if result and result.type == "death" then
 					Print("Successful proc. Entering execution state")
 					
 					
@@ -259,23 +266,25 @@ _G.testhook = function(self, t, input)
 							GloryKills.unit:set_position(my_pos)
 							GloryKills.unit:set_rotation(look_mov)
 							GloryKills.unit:movement():play_redirect("execution")
+--							barfoo1 = GloryKills.unit
 						end
+--						barfoo2 = hit_unit
 						
 						
 						
-						hit_unit:brain():clbk_death(hit_unit,damage_info)
+						--hit_unit:brain():clbk_death(hit_unit,damage_info)
 						
 						hit_mov_ext:set_rotation(look_mov)
 						hit_mov_ext:set_position(mvector3.copy(my_pos))
-						hit_mov_ext:play_redirect("death_execution")
+						--hit_mov_ext:play_redirect("death_execution")
 						
 						self._state_data.execution_unit = hit_unit
 						
 						--my_mov_ext:change_state("execution")
 						
 						-- disable the melee that would otherwise occur on this frame
-						self._state_data.melee_attack_wanted = true
-						self._state_data.melee_attack_allowed_t = 0
+--						self._state_data.melee_attack_wanted = true
+--						self._state_data.melee_attack_allowed_t = 0
 					end
 				end
 				
@@ -283,6 +292,17 @@ _G.testhook = function(self, t, input)
 		end
 	end
 end
+
+--[[
+BeardLib:AddUpdater("asdfljaksdljkf",function(t,dt)
+	if alive(barfoo1) then
+		Draw:brush(Color.red:with_alpha(0.5)):sphere(barfoo1:position(),10)
+	end
+	if alive(barfoo2) then
+		Draw:brush(Color.blue:with_alpha(0.5)):sphere(barfoo2:position(),10)
+	end
+end)
+--]]
 
 Hooks:OverrideFunction(PlayerStandard,"_check_action_melee",
 	function(...)

@@ -26,7 +26,20 @@ function GloryKills:spawn_third_unit(unit)
 	local player_movement = player:movement()
 	local pos = player_movement:m_pos()
 	local rot = player_movement:m_head_rot()
-	local char_id = player_peer:character_id()
+	local char_id = player_peer:character_id() -- returns "locked" in some cases? not sure why, so this will be the fallback
+	
+	--[[
+	-- get ai name for this character
+	local char_name = managers.criminals:character_name_by_peer_id(player_peer:id())
+	for _,data in pairs(tweak_data.criminals.characters) do 
+		if data.name == CriminalsManager.convert_new_to_old_character_workname(char_name) then
+			char_id = data.static_data.ai_character_id
+			break
+		end
+	end
+	--]]
+	
+	-- get the 3p unit for this ai
 	local unit_name = self.HUSK_NAMES[char_id] or tweak_data.blackmarket.characters[char_id].npc_unit:gsub("(.+)/npc_", "%1/player_") .. "_husk"
 	local unit_name_ids = Idstring(unit_name)
 

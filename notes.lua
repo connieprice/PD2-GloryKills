@@ -68,7 +68,7 @@ execute_unit(managers.player:local_player():movement():current_state()._fwd_ray.
 local player = managers.player:local_player()
 local fwd_ray = player:movement():current_state()._fwd_ray
 			local attack_data = {
-				variant = "tase",
+				variant = "execution",
 				damage = 1000000,
 				damage_effect = 0,
 				attacker_unit = player,
