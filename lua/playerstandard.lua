@@ -1,4 +1,4 @@
-local DEBUG_DRAW_ENABLED = true
+local DEBUG_DRAW_ENABLED = false
 -- visualize raycast line-of-sight checks
 
 PlayerStandard.ANIM_STATES.standard.execution = Idstring("execution")
