@@ -2,54 +2,10 @@ local DEBUG_DRAW_ENABLED = false
 -- visualize raycast line-of-sight checks
 
 PlayerStandard.ANIM_STATES.standard.execution = Idstring("execution")
-
+--memory optimization; temp vector allocations to be used for various calculations
 local mvec_1 = Vector3()
 local mvec_2 = Vector3()
-local impact_bones_tmp = {
-	"Hips",
-	"Spine",
-	"Spine1",
-	"Spine2",
-	"Neck",
-	"Head",
-	"LeftShoulder",
-	"LeftArm",
-	"LeftForeArm",
-	"RightShoulder",
-	"RightArm",
-	"RightForeArm",
-	"LeftUpLeg",
-	"LeftLeg",
-	"LeftFoot",
-	"RightUpLeg",
-	"RightLeg",
-	"RightFoot",
-	"c_sphere_head"
-}
-local impact_body_distance_tmp = {
-	Head = 15,
-	Spine1 = 25,
-	RightShoulder = 20,
-	LeftFoot = 5,
-	Spine2 = 20,
-	RightLeg = 10,
-	c_sphere_head = 15,
-	LeftShoulder = 20,
-	LeftUpLeg = 15,
-	RightFoot = 5,
-	LeftArm = 8,
-	Spine = 15,
-	Neck = 7,
-	RightUpLeg = 15,
-	RightArm = 8,
-	LeftLeg = 10,
-	LeftForeArm = 6,
-	RightForeArm = 6,
-	Hips = 15
-}
 
---local mvec_1 = Vector3()
---local mvec_2 = Vector3()
 _G.testhook = function(self, t, input,...)
 
 	local action_wanted = input.btn_melee_press or input.btn_melee_release
@@ -321,6 +277,12 @@ _G.testhook = function(self, t, input,...)
 	end
 end
 
+Hooks:PreHook(PlayerStandard,"_check_action_melee","glorykills_playerstandard_checkmelee",function(...)
+	_G.testhook(...)
+end)
+
+do return end
+
 
 --[[
 BeardLib:AddUpdater("asdfljaksdljkf",function(t,dt)
@@ -333,11 +295,51 @@ BeardLib:AddUpdater("asdfljaksdljkf",function(t,dt)
 end)
 --]]
 
-Hooks:PreHook(PlayerStandard,"_check_action_melee","glorykills_playerstandard_checkmelee",function(...)
-	_G.testhook(...)
-end)
+-- i included these for safety (from PlayerStandard) but they aren't used by any of the functions this mod hooks
+local impact_bones_tmp = {
+	"Hips",
+	"Spine",
+	"Spine1",
+	"Spine2",
+	"Neck",
+	"Head",
+	"LeftShoulder",
+	"LeftArm",
+	"LeftForeArm",
+	"RightShoulder",
+	"RightArm",
+	"RightForeArm",
+	"LeftUpLeg",
+	"LeftLeg",
+	"LeftFoot",
+	"RightUpLeg",
+	"RightLeg",
+	"RightFoot",
+	"c_sphere_head"
+}
+local impact_body_distance_tmp = {
+	Head = 15,
+	Spine1 = 25,
+	RightShoulder = 20,
+	LeftFoot = 5,
+	Spine2 = 20,
+	RightLeg = 10,
+	c_sphere_head = 15,
+	LeftShoulder = 20,
+	LeftUpLeg = 15,
+	RightFoot = 5,
+	LeftArm = 8,
+	Spine = 15,
+	Neck = 7,
+	RightUpLeg = 15,
+	RightArm = 8,
+	LeftLeg = 10,
+	LeftForeArm = 6,
+	RightForeArm = 6,
+	Hips = 15
+}
 
-do return end
+
 
 Hooks:OverrideFunction(PlayerStandard,"_check_action_melee",
 	function(...)
