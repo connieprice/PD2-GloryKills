@@ -33,6 +33,10 @@
 			"script_path" : "lua/playerstateexecution.lua"
 		},
 		{
+			"hook_id" : "lib/units/beings/player/playercamera",
+			"script_path" : "lua/playercamera.lua"
+		},
+		{
 			"hook_id" : "lib/units/cameras/fpcameraplayerbase",
 			"script_path" : "lua/fpcameraplayerbase.lua"
 		},
