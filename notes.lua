@@ -2,6 +2,12 @@
 --[[
 TODO:
 
+- fix 3p unit refusing to be hidden immediately after spawning with player
+- eyeAim bone doesn't reflect what's in blender?
+- incorrect 3p unit for the chosen player character
+
+
+
 forward-design to expect for enemy type specific animations:
 - bulldozer
 - cloaker
