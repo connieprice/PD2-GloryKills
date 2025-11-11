@@ -232,7 +232,14 @@ _G.testhook = function(self, t, input,...)
 				-- this does set the flag before we technically know that the execution has succeeded
 				-- but as long as that var is recalculated before each attempt it should be fine
 				
+				-- WOWEE look at the time again! it's time for CODE CRIMES!
+				local check_medic_heal = dmg_ext.check_medic_heal
+				dmg_ext.check_medic_heal = function(this) return false end -- disable the medic heal by redefining the method solely on this instance
+				-- ... it was this, redefine the damage_melee function, or define a whole NEW damage function. cursed any way you cut it
+				
 				local result = dmg_ext:damage_melee(attack_data)
+				
+				dmg_ext.check_medic_heal = check_medic_heal -- put that method back where it came from or so help me!
 				
 				if not result then
 					--log("Hit ineffective")
