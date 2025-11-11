@@ -163,7 +163,7 @@ _G.testhook = function(self, t, input,...)
 			--]]
 			
 			if not has_los then
-				log("Insufficient line of sight to execution target")
+				--log("Insufficient line of sight to execution target")
 				return
 			end
 			
@@ -174,48 +174,55 @@ _G.testhook = function(self, t, input,...)
 				-- do health check; only attempt proc if melee is estimated to be fatal blow
 				local melee_entry = managers.blackmarket:equipped_melee_weapon()
 				local melee_td = tweak_data.blackmarket.melee_weapons[melee_entry]
-				local damage,_ = managers.blackmarket:equipped_melee_weapon_damage_info(1)
-				damage = damage * managers.player:get_melee_dmg_multiplier()
-	
-				local dmg_multiplier = 1
 				
-				if not managers.groupai:state():is_enemy_special(hit_unit) then
-					dmg_multiplier = dmg_multiplier * managers.player:upgrade_value("player", "non_special_melee_multiplier", 1)
+				if hit_mov_ext:cool() then
+					-- assume it will be an instant kill anyway
 				else
-					dmg_multiplier = dmg_multiplier * managers.player:upgrade_value("player", "melee_damage_multiplier", 1)
-				end
-				
-				dmg_multiplier = dmg_multiplier * managers.player:upgrade_value("player", "melee_" .. tostring(melee_td.stats.weapon_type) .. "_damage_multiplier", 1)
-
-				if hit_unit:base() and hit_unit:base().char_tweak and hit_unit:base():char_tweak().priority_shout then
-					dmg_multiplier = dmg_multiplier * (melee_td.stats.special_damage_multiplier or 1)
-				end
-
-				if managers.player:has_category_upgrade("melee", "stacking_hit_damage_multiplier") then
-					self._state_data.stacking_dmg_mul = self._state_data.stacking_dmg_mul or {}
-					self._state_data.stacking_dmg_mul.melee = self._state_data.stacking_dmg_mul.melee or {
-						nil,
-						0
-					}
-					local stack = self._state_data.stacking_dmg_mul.melee
-
-					if stack[1] and t < stack[1] then
-						dmg_multiplier = dmg_multiplier * (1 + managers.player:upgrade_value("melee", "stacking_hit_damage_multiplier", 0) * stack[2])
+					local damage,_ = managers.blackmarket:equipped_melee_weapon_damage_info(1)
+					damage = damage * managers.player:get_melee_dmg_multiplier()
+		
+					local dmg_multiplier = 1
+					
+					if not managers.groupai:state():is_enemy_special(hit_unit) then
+						dmg_multiplier = dmg_multiplier * managers.player:upgrade_value("player", "non_special_melee_multiplier", 1)
+					else
+						dmg_multiplier = dmg_multiplier * managers.player:upgrade_value("player", "melee_damage_multiplier", 1)
 					end
-				end
-				
-				local damage_health_ratio = managers.player:get_damage_health_ratio(self._ext_damage:health_ratio(), "melee")
+					
+					dmg_multiplier = dmg_multiplier * managers.player:upgrade_value("player", "melee_" .. tostring(melee_td.stats.weapon_type) .. "_damage_multiplier", 1)
 
-				if damage_health_ratio > 0 then
-					dmg_multiplier = dmg_multiplier * (1 + self._damage_health_ratio_mul_melee * damage_health_ratio)
-				end
+					if hit_unit:base() and hit_unit:base().char_tweak and hit_unit:base():char_tweak().priority_shout then
+						dmg_multiplier = dmg_multiplier * (melee_td.stats.special_damage_multiplier or 1)
+					end
 
-				dmg_multiplier = dmg_multiplier * managers.player:temporary_upgrade_value("temporary", "berserker_damage_multiplier", 1)
-				
-				damage = damage * dmg_multiplier
-				if damage < dmg_ext:health() then
-					log("Not projected fatal blow:",damage,dmg_ext:health())
-					return
+					if managers.player:has_category_upgrade("melee", "stacking_hit_damage_multiplier") then
+						self._state_data.stacking_dmg_mul = self._state_data.stacking_dmg_mul or {}
+						self._state_data.stacking_dmg_mul.melee = self._state_data.stacking_dmg_mul.melee or {
+							nil,
+							0
+						}
+						local stack = self._state_data.stacking_dmg_mul.melee
+
+						if stack[1] and t < stack[1] then
+							dmg_multiplier = dmg_multiplier * (1 + managers.player:upgrade_value("melee", "stacking_hit_damage_multiplier", 0) * stack[2])
+						end
+					end
+					
+					local damage_health_ratio = managers.player:get_damage_health_ratio(self._ext_damage:health_ratio(), "melee")
+
+					if damage_health_ratio > 0 then
+						dmg_multiplier = dmg_multiplier * (1 + self._damage_health_ratio_mul_melee * damage_health_ratio)
+					end
+
+					dmg_multiplier = dmg_multiplier * managers.player:temporary_upgrade_value("temporary", "berserker_damage_multiplier", 1)
+					
+					damage = damage * dmg_multiplier
+					
+					-- final health check
+					if damage < dmg_ext:health() then
+						--log("Not projected fatal blow:",damage,dmg_ext:health())
+						return
+					end
 				end
 				
 				local attack_data = {
@@ -253,7 +260,7 @@ _G.testhook = function(self, t, input,...)
 				local result = dmg_ext:damage_melee(attack_data)
 				
 				if not result then
-					log("Hit ineffective")
+					--log("Hit ineffective")
 					return
 				end
 				
