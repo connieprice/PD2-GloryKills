@@ -31,7 +31,12 @@
 					<key at="trigger" trigger="execution_grab" callback="anim_execution_grab" class_name="base"/>
 					<key at="trigger" trigger="execution_kill" callback="anim_execution_kill" class_name="base"/>
 				</keys>
+				<exit name="std/spawn/loop"/>
+				<!--
 				<exit name="std/stand/still/idle/look"/>
+				<exit name="std/spawn/loop"/>
+				<exit name="std/stand/still"/>
+				-->
 			</state>
 		</target>
 	</tweak>
@@ -60,6 +65,7 @@
 		</target>
 	</tweak>
 	
+	<!-- add new state transitions here
 	<tweak version="2" name="anims/units/enemies/cop/std" extension="animation_states">
 		<search>
 			<xml/>
@@ -70,6 +76,7 @@
 			<to name="death_execution" redirect="std/death/execution"/>
 		</target>
 	</tweak>
+	-->
 	
 	
 <!-- define anim to play during executed state -->
@@ -84,7 +91,7 @@
 				<param name="var2" value="0"/>
 				<anim name="gen_death_execution_front" weight="var1"/>
 				<anim name="gen_death_execution_rear" weight="var2"/>
-				<keys timebase="relative"> <!-- should this be "frames"? -->
+				<keys timebase="relative"> <!-- should this be "frames" or "relative"? -->
 					
 					<key at="trigger" trigger="execution_slap" callback="anim_execution_generic" class_name="character_damage" param1="1"/>
 					<key at="trigger" trigger="execution_punch" callback="anim_execution_generic" class_name="character_damage" param1="2"/>
