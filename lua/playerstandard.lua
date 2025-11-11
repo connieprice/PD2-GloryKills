@@ -35,6 +35,25 @@ _G.testhook = function(self, t, input,...)
 		end
 		
 		if managers.enemy:is_enemy(hit_unit) and not managers.enemy:is_civilian(hit_unit) then
+			
+			local hit_base = hit_unit:base()
+			if not hit_base then 
+				return
+			end
+			
+			if hit_base.has_tag then
+				if hit_base:has_tag("shield") or hit_base:has_tag("phalanx_vip") or hit_base:has_tag("phalanx_minion") then
+					-- exclude shields, winters, and phalanx shields
+					return 
+				end
+				
+				-- special variations (for later)
+--				if hit_base:has_tag("tank") then
+--				end
+--				if hit_base:has_tag("spooc") then
+--				end
+			end
+			
 			if hit_unit:in_slot(25,26) then -- sentry guns not allowed >:(
 				--log("Sentry guns cannot be executed")
 				return
@@ -147,7 +166,7 @@ _G.testhook = function(self, t, input,...)
 					
 					dmg_multiplier = dmg_multiplier * managers.player:upgrade_value("player", "melee_" .. tostring(melee_td.stats.weapon_type) .. "_damage_multiplier", 1)
 
-					if hit_unit:base() and hit_unit:base().char_tweak and hit_unit:base():char_tweak().priority_shout then
+					if hit_base.char_tweak and hit_base:char_tweak().priority_shout then
 						dmg_multiplier = dmg_multiplier * (melee_td.stats.special_damage_multiplier or 1)
 					end
 
@@ -268,6 +287,7 @@ _G.testhook = function(self, t, input,...)
 					self._state_data.melee_attack_wanted = nil
 					input.btn_melee_press = nil
 					input.btn_melee_release = nil
+					--input.btn_meleet_state = nil -- this seems like an edge case i don't need to worry about
 					return
 				else
 					log("GloryKills: uhh... this is embarrassing. the execution failed to kill the enemy.")

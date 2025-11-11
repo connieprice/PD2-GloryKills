@@ -1,44 +1,25 @@
 
 --[[
+TODO:
 
-
-todo:
-
-- raycast checks (like bipods) to ensure unobstructed view to enemy
-	- 3x rays- head, body, legs
-
-figure out the "proper" way to trigger death logic AND death animations
-- death logic shouldn't do anything to the unit that would cause a crash with other players
-	- freeze the unit, preventing it from taking action
-		- this entails disabling the brain ai and unregistering it with the groupai state/manager
-	- kill the unit, counting as a kill
-		- needs to call on-kill listeners like in playermanager
+forward-design to expect for enemy type specific animations:
+- bulldozer
+- cloaker
 
 
 
-
-
-
-	
-execution_slap first slap of the cop weapon to the side
-execution_punch punch
-execution_grab grabbing the cop's head
-execution_kill headbutt
-death presumed ragdoll timing so at this trigger i thought itd be ok to turn the cop into a ragdoll
-also the player animation is 46 frames long
-the cop animation is 71
-
-test triggering death anim from calling listeners
+playbonk's anim notes:	
+	execution_slap first slap of the cop weapon to the side
+	execution_punch punch
+	execution_grab grabbing the cop's head
+	execution_kill headbutt
+	death presumed ragdoll timing so at this trigger i thought itd be ok to turn the cop into a ragdoll
+	also the player animation is 46 frames long
+	the cop animation is 71
 
 check if custom state syncing will crash unmodded clients
-	
-	
-	
-	
-	
-	
-	
-	--]]
+
+--]]
 
 
 
