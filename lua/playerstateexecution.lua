@@ -242,6 +242,10 @@ function PlayerStateExecution:exit(state_data,...)
 	PlayerStateExecution.super.exit(self,state_data,...)	
 	
 	GloryKills.set_viewmodel_visible(self,true)
+	
+	if alive(GloryKills.unit) then
+		GloryKills.unit:set_position(Vector3(0,0,-10000))
+	end
 end
 
 function PlayerStateExecution:update(t,dt)
