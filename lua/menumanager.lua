@@ -100,7 +100,7 @@ function GloryKills:spawn_third_unit(unit)
 --	end
 
 	unit_movement.play_state = function(self,state_name,at_time)
-		if not foobar then Print("play_state",state_name,debug.traceback()) end
+--		if not foobar then Print("play_state",state_name,debug.traceback()) end
 	end
 
 	unit_movement.sync_action_walk_nav_point = function (_self, pos, speed, action)

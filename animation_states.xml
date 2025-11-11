@@ -20,8 +20,11 @@
 		</search>
 		
 		<target mode="attach">
-			<state name="std/stand/execution" type="once" segment="base" speed="1.0">
-				<anim name="heister_execution"/>
+			<state name="std/stand/execution" type="mix" segment="base" speed="1.0">
+				<param name="var1" value="0"/>
+				<param name="var2" value="0"/>
+				<anim name="heister_execution_front" weight="var1"/>
+				<anim name="heister_execution_back" weight="var2"/>
 				<keys>
 					<key at="trigger" trigger="execution_slap" callback="anim_execution_slap" class_name="base"/>
 					<key at="trigger" trigger="execution_punchthroat" callback="anim_execution_punchthroat" class_name="base"/>
@@ -77,8 +80,10 @@
 		
 		<target mode="attach">
 			<state name="std/death/execution" type="mix" segment="base">
-				<param name="var1" value="1"/>
-				<anim name="gen_death_execution" weight="var1"/>
+				<param name="var1" value="0"/>
+				<param name="var2" value="0"/>
+				<anim name="gen_death_execution_front" weight="var1"/>
+				<anim name="gen_death_execution_back" weight="var2"/>
 				<keys timebase="relative"> <!-- should this be "frames"? -->
 					
 					<key at="trigger" trigger="execution_slap" callback="anim_execution_generic" class_name="character_damage" param1="1"/>

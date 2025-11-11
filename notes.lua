@@ -4,18 +4,15 @@
 
 todo:
 
+- raycast checks (like bipods) to ensure unobstructed view to enemy
+	- 3x rays- head, body, legs
+
 figure out the "proper" way to trigger death logic AND death animations
 - death logic shouldn't do anything to the unit that would cause a crash with other players
 	- freeze the unit, preventing it from taking action
 		- this entails disabling the brain ai and unregistering it with the groupai state/manager
 	- kill the unit, counting as a kill
 		- needs to call on-kill listeners like in playermanager
-- death animations
-	- can't be interrupted by other idle animations
-	- does it need to be an "action"?
-	- ideally it should be automatically triggered via the damage_whatever function, 
-	  where the usual listeners are called,
-	  so the only difference would be which animation is chosen
 
 
 

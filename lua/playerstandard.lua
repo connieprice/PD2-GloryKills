@@ -1,7 +1,12 @@
+local DEBUG_DRAW_ENABLED = true
+-- visualize raycast line-of-sight checks
+
 PlayerStandard.ANIM_STATES.standard.execution = Idstring("execution")
 
+--memory optimization; temp vector allocations to be used for various calculations
 local mvec_1 = Vector3()
 local mvec_2 = Vector3()
+
 local impact_bones_tmp = {
 	"Hips",
 	"Spine",
@@ -165,7 +170,7 @@ end
 
 --local mvec_1 = Vector3()
 --local mvec_2 = Vector3()
-_G.testhook = function(self, t, input)
+_G.testhook = function(self, t, input,...)
 
 	local action_wanted = input.btn_melee_press or input.btn_melee_release
 	--Print("press",input.btn_melee_press,"release",input.btn_melee_release)
@@ -177,8 +182,6 @@ _G.testhook = function(self, t, input)
 	-- extra conditions specific to the execution
 	or self:in_air() or self:ducking() or self:on_ladder() or self:_on_zipline()
 	
-	
-	
 	if action_forbidden then
 		return
 	end
@@ -188,106 +191,179 @@ _G.testhook = function(self, t, input)
 	local col_ray = self:_calc_melee_hit_ray(t, 20)
 	local hit_unit = col_ray and col_ray.unit
 	if hit_unit then
-		if managers.enemy:is_enemy(hit_unit) then
-			local dmg_ext = hit_unit:character_damage()
-			if dmg_ext and dmg_ext.damage_melee and not (dmg_ext:dead() or dmg_ext._immortal) then
-			-- kill the enemy here;
-			-- perform identical damage calculation,
-			-- but without the vfx/sfx,
-			-- only the network
-				
-				
-				
-				
-				local attack_data = {
-					variant = "execution",
-					damage = dmg_ext._HEALTH_INIT or 10000000,
-					damage_effect = 0,
-					attacker_unit = self._unit,
-					col_ray = col_ray,
-					name_id = managers.blackmarket:equipped_melee_weapon(),
-					charge_lerp_value = 0
-				}
-				
-				--local result = _G.copdamage_execute_melee(dmg_ext,attack_data)
-				--redirect
-				--dmg_ext:_on_damage_received(attack_data)
-								
-				local result = dmg_ext:damage_melee(attack_data)
-				--[[
-				dmg_ext:die(attack_data)
-				
-				foo3 = col_ray
-				local damage_info = { -- for triggering the anim
-					damage = attack_data.damage,
-					variant = "melee",
-					pos = col_ray.hit_position or col_ray.position,
-					attack_dir = col_ray.ray,
-					result = {
-						variant = "melee",
-						type = "execution"
-					}
-				}
-				dmg_ext:_call_listeners(damage_info)
-				--]]
+		if managers.enemy:is_enemy(hit_unit) and not managers.enemy:is_civilian(hit_unit) then
+		
+			if hit_unit:in_slot(25,26) then -- sentry guns not allowed >:(
+				return
+			end
+			
+			if hit_unit:in_slot(2,3,16,25) then -- no jokers either
+				return
+			end
+			
+			local my_mov_ext = self._ext_movement
+			local my_pos = my_mov_ext:m_pos()
+			local my_rot = self._ext_camera:rotation()
+			local look_mov = Rotation(my_rot:yaw(),0,0)
+			local hit_mov_ext = hit_unit:movement()
+			
+			
+			-- perform line-of-sight checks
+			local slotmask = managers.slot:get_mask("world_geometry")
+			local has_los = true
+			local ray
+			do -- check head position
+				mvector3.set(mvec1,my_mov_ext:m_head_pos())
+				mvector3.set(mvec2,hit_mov_ext:m_head_pos())
+				ray = World:raycast("ray", mvec1, mvec2, "slot_mask", slotmask)
+				if ray then 
+					-- hit obstacle
+					has_los = false
 					
+				end
 				
---				if dmg_ext:dead() then
-				if result and result.type == "death" then
-					Print("Successful proc. Entering execution state")
-					
-					
-					local my_mov_ext = self._ext_movement
-					local my_pos = my_mov_ext:m_pos()
-					local my_rot = self._ext_camera:rotation() --my_mov_ext:m_rot()
-					local look_mov = Rotation(my_rot:yaw(),0,0)
---					self._state_data.execution_start_position = mvector3.copy(my_pos)
-					-- rotate cop to face player
-					-- set position to cop position
-					-- rotate player to face cop
-					-- after anim, move player back to orig pos
-					
-					local hit_mov_ext = hit_unit:movement()
-					
-					-- detect back hits
-					--[[
-					mvector3.set(mvec_1, hit_mov_ext:m_pos()) -- prev pos (before moving the enemy)
-					mvector3.subtract(mvec_1, my_pos)
-					mvector3.normalize(mvec_1)
-					mvector3.set(mvec_2, hit_mov_ext:m_rot():y())
-
-					local from_behind = mvector3.dot(mvec_1, mvec_2) >= 0
-					--]]
-					if false and from_behind then
-						
+				if DEBUG_DRAW_ENABLED then
+					if ray then
+						Draw:brush(Color.red,5):line(mvec1,mvec2,5)
 					else
-						
-						if GloryKills.unit then
-							GloryKills.unit:set_position(my_pos)
-							GloryKills.unit:set_rotation(look_mov)
-							GloryKills.unit:movement():play_redirect("execution")
---							barfoo1 = GloryKills.unit
-						end
---						barfoo2 = hit_unit
-						
-						
-						
-						--hit_unit:brain():clbk_death(hit_unit,damage_info)
-						
-						hit_mov_ext:set_rotation(look_mov)
-						hit_mov_ext:set_position(mvector3.copy(my_pos))
-						--hit_mov_ext:play_redirect("death_execution")
-						
-						self._state_data.execution_unit = hit_unit
-						
-						--my_mov_ext:change_state("execution")
-						
-						-- disable the melee that would otherwise occur on this frame
---						self._state_data.melee_attack_wanted = true
---						self._state_data.melee_attack_allowed_t = 0
+						Draw:brush(Color.green,5):line(mvec1,mvec2,5)
 					end
 				end
 				
+			end
+			
+			ray = nil
+			do -- check body position
+--				mvector3.set(mvec1,my_mov_ext:m_head_pos()) -- should still be player head pos
+				mvector3.set(mvec2,hit_unit:oobb():center())
+				ray = World:raycast("ray", mvec1, mvec2, "slot_mask", slotmask)
+				if ray then 
+					has_los = false
+				end
+				
+				if DEBUG_DRAW_ENABLED then
+					if ray then
+						Draw:brush(Color.red,5):line(mvec1,mvec2,5)
+					else
+						Draw:brush(Color.green,5):line(mvec1,mvec2,5)
+					end
+				end
+				
+			end
+			
+			ray = nil
+			do -- check leg/feet position
+				mvector3.set(mvec1,my_pos)
+				mvector3.set(mvec2,hit_mov_ext:m_pos())
+				ray = World:raycast("ray", mvec1, mvec2, "slot_mask", slotmask)
+				if ray then 
+					has_los = false
+				end
+				
+				if DEBUG_DRAW_ENABLED then
+					if ray then
+						Draw:brush(Color.red,5):line(mvec1,mvec2,5)
+					else
+						Draw:brush(Color.green,5):line(mvec1,mvec2,5)
+					end
+				end
+			end
+			
+			
+			if has_los then
+				local dmg_ext = hit_unit:character_damage()
+				if dmg_ext and dmg_ext.damage_melee and not (dmg_ext:dead() or dmg_ext._immortal) then
+					
+					-- do health check; only attempt proc if melee is estimated to be fatal blow
+					local melee_td = tweak_data.blackmarket.melee_weapons[melee_entry]
+					local damage,dmg_multiplier = 0,0
+					
+					if not managers.groupai:state():is_enemy_special(hit_unit) then
+						dmg_multiplier = dmg_multiplier * managers.player:upgrade_value("player", "non_special_melee_multiplier", 1)
+					else
+						dmg_multiplier = dmg_multiplier * managers.player:upgrade_value("player", "melee_damage_multiplier", 1)
+					end
+					
+					dmg_multiplier = dmg_multiplier * managers.player:upgrade_value("player", "melee_" .. tostring(melee_td.stats.weapon_type) .. "_damage_multiplier", 1)
+
+					if character_unit:base() and character_unit:base().char_tweak and character_unit:base():char_tweak().priority_shout then
+						dmg_multiplier = dmg_multiplier * (melee_td.stats.special_damage_multiplier or 1)
+					end
+
+					if managers.player:has_category_upgrade("melee", "stacking_hit_damage_multiplier") then
+						self._state_data.stacking_dmg_mul = self._state_data.stacking_dmg_mul or {}
+						self._state_data.stacking_dmg_mul.melee = self._state_data.stacking_dmg_mul.melee or {
+							nil,
+							0
+						}
+						local stack = self._state_data.stacking_dmg_mul.melee
+
+						if stack[1] and t < stack[1] then
+							dmg_multiplier = dmg_multiplier * (1 + managers.player:upgrade_value("melee", "stacking_hit_damage_multiplier", 0) * stack[2])
+						else
+							stack[2] = 0
+						end
+					end
+
+					
+					
+					
+					local attack_data = {
+						variant = "execution",
+						damage = dmg_ext._HEALTH_INIT or 10000000,
+						damage_effect = 0,
+						attacker_unit = self._unit,
+						col_ray = col_ray,
+						name_id = managers.blackmarket:equipped_melee_weapon(),
+						charge_lerp_value = 0
+					}
+					local result = dmg_ext:damage_melee(attack_data)
+					if result and result.type == "death" then
+						--Print("Successful proc. Entering execution state")
+						-- detect back hits
+						mvector3.set(mvec_1, hit_mov_ext:m_pos()) -- prev pos (before moving the enemy)
+						mvector3.subtract(mvec_1, my_pos)
+						mvector3.normalize(mvec_1)
+						mvector3.set(mvec_2, hit_mov_ext:m_rot():y())
+
+						local from_behind = mvector3.dot(mvec_1, mvec_2) >= 0
+						local variant
+						if from_behind then
+							-- set variant
+							variant = "var2"
+						else
+							variant = "var1"
+						end
+						if GloryKills.unit then
+							GloryKills.unit:set_position(my_pos)
+							GloryKills.unit:set_rotation(look_mov)
+							
+							local redir = GloryKills.unit:movement():play_redirect("execution")
+							GloryKills._unit:movement()._machine:set_parameter(redir, variant, 1)
+						end
+						result.variant = "execution"
+						result.execution_variant = variant
+
+
+						-- rotate cop to face player
+						-- set position to cop position
+						-- rotate player to face cop
+						-- after anim, move player back to orig pos
+						hit_mov_ext:set_rotation(look_mov)
+						hit_mov_ext:set_position(mvector3.copy(my_pos))
+						self._state_data.execution_unit = hit_unit
+						
+						my_mov_ext:change_state("execution")
+						
+						
+					-- disable the melee that would otherwise occur on this frame
+	--						self._state_data.melee_attack_allowed_t = 0
+						self._state_data.melee_attack_wanted = nil
+						input.btn_melee_press = nil
+						input.btn_melee_release = nil
+						return
+					end
+				end
 			end
 		end
 	end
@@ -304,215 +380,14 @@ BeardLib:AddUpdater("asdfljaksdljkf",function(t,dt)
 end)
 --]]
 
+Hooks:PreHook(PlayerStandard,"_check_action_melee","glorykills_playerstandard_checkmelee",function(...)
+	_G.testhook(...)
+end)
+
+do return end
+
 Hooks:OverrideFunction(PlayerStandard,"_check_action_melee",
 	function(...)
 		_G.testhook(...)
 	end
 )
-
-do return end
-
-Hooks:PreHook(PlayerStandard,"_check_action_melee","glorykills_playerstandard_checkmelee",function(...)
-	_G.testhook(...)
-end)
-
-
---[[
-local orig = Hooks:GetFunction(PlayerStandard,"_do_action_melee")
-Hooks:OverrideFunction(PlayerStandard,"_do_action_melee",function(self,t,input,skip_damage)
-	
-	
-	
-	return orig(self,t,input,skip_damage)
-
-end)
---]]
-
-
---Hooks:PostHook(PlayerStandard,"_do_action_melee","glorykills_onmeleeattack",function(self, t, input, skip_damage)
---	local unit = self:_calc_melee_hit_ray(t,100)
--- if valid hit unit is low health, enter execution state
---end)
-
---[[
-Hooks:PostHook(PlayerStandard,"_do_melee_damage","glorykills_onmeleedamage",function(self, t, bayonet_melee, melee_hit_ray, melee_entry, hand_id)
-	local defense_data = Hooks:GetReturn()
-	if defense_data and defense_data.result.type == "death" then
-	
-	end
-	
-end)
---]]
-
-do return end
-
-_G.copdamage_execute_melee = function(self,attack_data)
-	if self._dead or self._invulnerable then
-		return
-	end
-
-	if PlayerDamage.is_friendly_fire(self, attack_data.attacker_unit) then
-		return "friendly_fire"
-	end
-
-	if self:chk_immune_to_attacker(attack_data.attacker_unit) then
-		return
-	end
-
-	local result = nil
-	local is_civlian = CopDamage.is_civilian(self._unit:base()._tweak_table)
-	local is_gangster = CopDamage.is_gangster(self._unit:base()._tweak_table)
-	local is_cop = not is_civlian and not is_gangster
-	local head = self._head_body_name and attack_data.col_ray.body and attack_data.col_ray.body:name() == self._ids_head_body_name
-	local damage = attack_data.damage
-
-	if attack_data.attacker_unit and attack_data.attacker_unit == managers.player:player_unit() then
-		local critical_hit, crit_damage = self:roll_critical_hit(attack_data, damage)
-
-		if critical_hit then
-			managers.hud:on_crit_confirmed()
-
-			damage = crit_damage
-			attack_data.critical_hit = true
-		else
-			managers.hud:on_hit_confirmed()
-		end
-
-		if tweak_data.achievement.cavity.melee_type == attack_data.name_id and not CopDamage.is_civilian(self._unit:base()._tweak_table) then
-			managers.achievment:award(tweak_data.achievement.cavity.award)
-		end
-	end
-
-	damage = damage * (self._marked_dmg_mul or 1)
-
-	if self._unit:movement():cool() then
-		damage = self._HEALTH_INIT
-	end
-
-	local damage_effect = attack_data.damage_effect
-	local damage_effect_percent = 1
-	damage = self:_apply_damage_reduction(damage)
-	damage = math.clamp(damage, self._HEALTH_INIT_PRECENT, self._HEALTH_INIT)
-	local damage_percent = math.ceil(damage / self._HEALTH_INIT_PRECENT)
-	damage = damage_percent * self._HEALTH_INIT_PRECENT
-	damage, damage_percent = self:_apply_min_health_limit(damage, damage_percent)
-
-	if self._immortal then
-		damage = math.min(damage, self._health - 1)
-	end
-
-	if self._health <= damage then
-		if self:check_medic_heal() then
-			result = {
-				type = "healed",
-				variant = attack_data.variant
-			}
-		else
-			damage_effect_percent = 1
-			attack_data.damage = self._health
-			result = {
-				type = "death",
-				variant = attack_data.variant
-			}
-
-			self:die(attack_data)
-			self:chk_killshot(attack_data.attacker_unit, "melee", false, attack_data.name_id)
-		end
-	else
-		attack_data.damage = damage
-		damage_effect = math.clamp(damage_effect, self._HEALTH_INIT_PRECENT, self._HEALTH_INIT)
-		damage_effect_percent = math.ceil(damage_effect / self._HEALTH_INIT_PRECENT)
-		damage_effect_percent = math.clamp(damage_effect_percent, 1, self._HEALTH_GRANULARITY)
-		local result_type = attack_data.shield_knock and self._char_tweak.damage.shield_knocked and "shield_knock" or attack_data.variant == "counter_tased" and "counter_tased" or attack_data.variant == "taser_tased" and "taser_tased" or attack_data.variant == "counter_spooc" and "expl_hurt" or self:get_damage_type(damage_effect_percent, "melee") or "fire_hurt"
-		result = {
-			type = result_type,
-			variant = attack_data.variant
-		}
-
-		self:_apply_damage_to_health(damage)
-	end
-
-	attack_data.result = result
-	attack_data.pos = attack_data.col_ray.position
-	local dismember_victim = false
-	local snatch_pager = false
-
-	if result.type == "death" then
---		if self:_dismember_condition(attack_data) then
---			self:_dismember_body_part(attack_data)
---
---			dismember_victim = true
---		end
-
-		local data = {
-			name = self._unit:base()._tweak_table,
-			stats_name = self._unit:base()._stats_name,
-			head_shot = head,
-			weapon_unit = attack_data.weapon_unit,
-			name_id = attack_data.name_id,
-			variant = attack_data.variant
-		}
-
-		managers.statistics:killed_by_anyone(data)
-
-		if attack_data.attacker_unit == managers.player:player_unit() then
-			self:_comment_death(attack_data.attacker_unit, self._unit)
-			self:_show_death_hint(self._unit:base()._tweak_table)
-			managers.statistics:killed(data)
-
-			if not is_civlian and managers.groupai:state():whisper_mode() and managers.blackmarket:equipped_mask().mask_id == tweak_data.achievement.cant_hear_you_scream.mask then
-				managers.achievment:award_progress(tweak_data.achievement.cant_hear_you_scream.stat)
-			end
-
-			mvector3.set(mvec_1, self._unit:position())
-			mvector3.subtract(mvec_1, attack_data.attacker_unit:position())
-			mvector3.normalize(mvec_1)
-			mvector3.set(mvec_2, self._unit:rotation():y())
-
-			local from_behind = mvector3.dot(mvec_1, mvec_2) >= 0
-
-			if is_cop and Global.game_settings.level_id == "nightclub" and attack_data.name_id and attack_data.name_id == "fists" then
-				managers.achievment:award_progress(tweak_data.achievement.final_rule.stat)
-			end
-
-			if is_civlian then
-				managers.money:civilian_killed()
-			elseif math.rand(1) < managers.player:upgrade_value("player", "melee_kill_snatch_pager_chance", 0) then
-				snatch_pager = true
-				self._unit:unit_data().has_alarm_pager = false
-			end
-		end
-	end
-
-	self:_check_melee_achievements(attack_data)
-
-	local hit_offset_height = math.clamp(attack_data.col_ray.position.z - self._unit:movement():m_pos().z, 0, 300)
-	local variant = nil
-
-	if result.type == "shield_knock" then
-		variant = 1
-	elseif result.type == "counter_tased" then
-		variant = 2
-	elseif result.type == "expl_hurt" then
-		variant = 4
-	elseif snatch_pager then
-		variant = 3
-	elseif result.type == "taser_tased" then
-		variant = 5
-	elseif dismember_victim then
-		variant = 6
-	elseif result.type == "healed" then
-		variant = 7
-	else
-		variant = 0
-	end
-
-	local body_index = self._unit:get_body_index(attack_data.col_ray.body:name())
-
-	self:_send_melee_attack_result(attack_data, damage_percent, damage_effect_percent, hit_offset_height, variant, body_index)
-	--self:_on_damage_received(attack_data)
-
-	result.attack_data = attack_data
-
-	return result
-end

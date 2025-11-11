@@ -8,7 +8,8 @@
 		</search>
 		
 		<target mode="attach">
-			<anim name="heister_execution" file="anims/shared/rifle/generic/heister_execution" blend_set="all"/>
+			<anim name="heister_execution_front" file="anims/shared/rifle/generic/heister_execution_front" blend_set="all"/>
+			<anim name="heister_execution_back" file="anims/shared/rifle/generic/heister_execution_back" blend_set="all"/>
 		</target>
 	</tweak>
 
@@ -19,7 +20,8 @@
 		</search>
 		
 		<target mode="attach">
-			<anim name="gen_death_execution" file="anims/shared/rifle/generic/gen_death_execution" blend_set="all"/>
+			<anim name="gen_death_execution_front" file="anims/shared/rifle/generic/gen_death_execution_front" blend_set="all"/>
+			<anim name="gen_death_execution_back" file="anims/shared/rifle/generic/gen_death_execution_back" blend_set="all"/>
 		</target>
 	</tweak>
 	
