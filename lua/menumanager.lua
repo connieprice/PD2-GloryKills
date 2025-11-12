@@ -3,14 +3,15 @@ GloryKills = {
 	fp_unit = nil, -- the fp unit
 	unit = nil, -- the 3p unit
 	head_obj = nil, -- object
-	delayed_events = {}
+	delayed_events = {},
+	_character_visual_state = {}
 }
 GloryKills.HUSK_NAMES = {
 	wild = "units/pd2_dlc_wild/characters/npc_criminals_wild_1/player_criminal_wild_husk",
 	joy = "units/pd2_dlc_joy/characters/npc_criminals_joy_1/player_criminal_joy_husk"
 }
 -- copied this from third person mod. thanks hoppip
-function GloryKills:spawn_third_unit(unit)
+function GloryKills:spawn_third_unit(unit,character_name,visual_seed,outfit_string)
 	local SETTING_IMMERSIVE_FIRST_PERSON = true
 	local SETTING_CUSTOM_WEAPONS = false
 	local SETTING_START_IN_THIRD_PERSON = false
@@ -37,9 +38,10 @@ function GloryKills:spawn_third_unit(unit)
 			break
 		end
 	end
+	local unit_name = self.HUSK_NAMES[char_id] or tweak_data.blackmarket.characters[char_id].npc_unit .. "_husk"
 	--]]
 	
-	-- get the 3p unit for this ai
+	-- get the 3p unit
 	local unit_name = self.HUSK_NAMES[char_id] or tweak_data.blackmarket.characters[char_id].npc_unit:gsub("(.+)/npc_", "%1/player_") .. "_husk"
 	local unit_name_ids = Idstring(unit_name)
 
@@ -245,7 +247,26 @@ function GloryKills:spawn_third_unit(unit)
 
 	-- Unregister from groupai manager so it doesnt count as an actual criminal
 	managers.groupai:state():unregister_criminal(self.unit)
-
+	
+	
+	
+	
+	
+	
+	local loadout = managers.blackmarket:unpack_henchman_loadout_string(outfit_string)
+	local player_style = loadout and loadout.player_style or managers.blackmarket:get_default_player_style()
+	local suit_variation = loadout and loadout.suit_variation or "default"
+	local glove_id = loadout and loadout.glove_id or managers.blackmarket:get_default_glove_id()
+	local visual_state = {
+		armor_skin = "none",
+		armor_id = "level_1",
+		visual_seed = visual_seed,
+		player_style = player_style,
+		suit_variation = suit_variation,
+		glove_id = glove_id,
+		mask_id = managers.blackmarket:equipped_mask().mask_id
+	}
+	self:upd_visual_state(character_name,visual_state)
 end
 
 function GloryKills.set_viewmodel_visible(state,visible)
@@ -267,177 +288,93 @@ function GloryKills:Print(...)
 	if _G.Print then _G.Print(...) end
 end
 
---[[
-local mvec_1 = Vector3()
-local mvec_2 = Vector3()
-function GloryKills.copdamage_execution(self,attack_data)
-	if self._dead or self._invulnerable then
-		return
+function GloryKills:upd_visual_state(character_name,visual_state) -- based on CriminalsManager:update_character_visual_state()
+	local unit = self.unit
+	
+	local ids_unit = Idstring("unit")
+	local _prev_visual_state = self._character_visual_state
+	visual_state = visual_state or {}
+	
+	local visual_seed = visual_state.visual_seed or _prev_visual_state.visual_seed or CriminalsManager.get_new_visual_seed()
+	local mask_id = visual_state.mask_id or _prev_visual_state.mask_id
+	local armor_id = visual_state.armor_id or _prev_visual_state.armor_id or "level_1"
+	local armor_skin = visual_state.armor_skin or _prev_visual_state.armor_skin or "none"
+	local deployable_id = false
+
+	if visual_state.deployable_id ~= nil then
+		deployable_id = visual_state.deployable_id
+	elseif _prev_visual_state.deployable_id then
+		deployable_id = _prev_visual_state.deployable_id
+	end
+	
+	local crim_mgr = managers.criminals
+	
+	local player_style = crim_mgr:active_player_style() or managers.blackmarket:get_default_player_style()
+	local suit_variation = nil
+	local user_player_style = visual_state.player_style or _prev_visual_state.player_style or managers.blackmarket:get_default_player_style()
+
+	if not crim_mgr:is_active_player_style_locked() and user_player_style ~= managers.blackmarket:get_default_player_style() then
+		player_style = user_player_style
+		suit_variation = visual_state.suit_variation or _prev_visual_state.suit_variation or "default"
 	end
 
-	if PlayerDamage.is_friendly_fire(self, attack_data.attacker_unit) then
-		return "friendly_fire"
-	end
+	local glove_id = visual_state.glove_id or _prev_visual_state.glove_id or managers.blackmarket:get_default_glove_id()
+	local character_visual_state = {
+		is_local_peer = false,
+		visual_seed = visual_seed,
+		player_style = player_style,
+		suit_variation = suit_variation,
+		glove_id = glove_id,
+		mask_id = mask_id,
+		armor_id = armor_id,
+		armor_skin = armor_skin,
+		deployable_id = deployable_id
+	}
 
-	if self:chk_immune_to_attacker(attack_data.attacker_unit) then
-		return
-	end
 
-	local result = nil
-	local is_civlian = CopDamage.is_civilian(self._unit:base()._tweak_table)
-	local is_gangster = CopDamage.is_gangster(self._unit:base()._tweak_table)
-	local is_cop = not is_civlian and not is_gangster
-	local head = self._head_body_name and attack_data.col_ray.body and attack_data.col_ray.body:name() == self._ids_head_body_name
-	local damage = attack_data.damage
+	if player_style then
+		local unit_name = tweak_data.blackmarket:get_player_style_value(player_style, character_name, "third_unit")
 
-	if attack_data.attacker_unit and attack_data.attacker_unit == managers.player:player_unit() then
-		local critical_hit, crit_damage = self:roll_critical_hit(attack_data, damage)
-
-		if critical_hit then
-			managers.hud:on_crit_confirmed()
-
-			damage = crit_damage
-			attack_data.critical_hit = true
-		else
-			managers.hud:on_hit_confirmed()
+		if unit_name then
+			managers.dyn_resource:load(ids_unit, Idstring(unit_name), managers.dyn_resource.DYN_RESOURCES_PACKAGE, nil)
+--			crim_mgr:safe_load_asset(character, unit_name, "player_style")
 		end
+	end
 
-		if tweak_data.achievement.cavity.melee_type == attack_data.name_id and not CopDamage.is_civilian(self._unit:base()._tweak_table) then
-			managers.achievment:award(tweak_data.achievement.cavity.award)
+	if glove_id then
+		local unit_name = tweak_data.blackmarket:get_glove_value(glove_id, character_name, "unit", player_style, suit_variation)
+
+		if unit_name then
+			managers.dyn_resource:load(ids_unit, Idstring(unit_name), managers.dyn_resource.DYN_RESOURCES_PACKAGE, nil)
+--			crim_mgr:safe_load_asset(character, unit_name, "glove_id")
 		end
 	end
 
-	damage = damage * (self._marked_dmg_mul or 1)
+	if deployable_id then
+		local deployable_tweak_data = tweak_data.equipments[deployable_id]
+		local style_name = deployable_tweak_data.visual_style
 
-	if self._unit:movement():cool() then
-		damage = self._HEALTH_INIT
-	end
+		if style_name then
+			local unit_name = tweak_data.blackmarket:get_player_style_value(style_name, character_name, "third_unit")
 
-	local damage_effect = attack_data.damage_effect
-	local damage_effect_percent = 1
-	damage = self:_apply_damage_reduction(damage)
-	damage = math.clamp(damage, self._HEALTH_INIT_PRECENT, self._HEALTH_INIT)
-	local damage_percent = math.ceil(damage / self._HEALTH_INIT_PRECENT)
-	damage = damage_percent * self._HEALTH_INIT_PRECENT
-	damage, damage_percent = self:_apply_min_health_limit(damage, damage_percent)
-
-	if self._immortal then
-		damage = math.min(damage, self._health - 1)
-	end
-
-	if self._health <= damage then
---		if self:check_medic_heal() then
---			result = {
---				type = "healed",
---				variant = attack_data.variant
---			}
---		else
-			damage_effect_percent = 1
-			attack_data.damage = self._health
-			result = {
-				type = "death",
-				variant = attack_data.variant
-			}
-
-			self:die(attack_data)
-			self:chk_killshot(attack_data.attacker_unit, "melee", false, attack_data.name_id)
---		end
-	else
-		attack_data.damage = damage
-		damage_effect = math.clamp(damage_effect, self._HEALTH_INIT_PRECENT, self._HEALTH_INIT)
-		damage_effect_percent = math.ceil(damage_effect / self._HEALTH_INIT_PRECENT)
-		damage_effect_percent = math.clamp(damage_effect_percent, 1, self._HEALTH_GRANULARITY)
-		local result_type = attack_data.shield_knock and self._char_tweak.damage.shield_knocked and "shield_knock" or attack_data.variant == "counter_tased" and "counter_tased" or attack_data.variant == "taser_tased" and "taser_tased" or attack_data.variant == "counter_spooc" and "expl_hurt" or self:get_damage_type(damage_effect_percent, "melee") or "fire_hurt"
-		result = {
-			type = result_type,
-			variant = attack_data.variant
-		}
-
-		self:_apply_damage_to_health(damage)
-	end
-
-	attack_data.result = result
-	attack_data.pos = attack_data.col_ray.position
-	local dismember_victim = false
-	local snatch_pager = false
-
-	if result.type == "death" then
-		if self:_dismember_condition(attack_data) then
-			self:_dismember_body_part(attack_data)
-
-			dismember_victim = true
-		end
-
-		local data = {
-			name = self._unit:base()._tweak_table,
-			stats_name = self._unit:base()._stats_name,
-			head_shot = head,
-			weapon_unit = attack_data.weapon_unit,
-			name_id = attack_data.name_id,
-			variant = attack_data.variant
-		}
-
-		managers.statistics:killed_by_anyone(data)
-
-		if attack_data.attacker_unit == managers.player:player_unit() then
-			self:_comment_death(attack_data.attacker_unit, self._unit)
-			self:_show_death_hint(self._unit:base()._tweak_table)
-			managers.statistics:killed(data)
-
-			if not is_civlian and managers.groupai:state():whisper_mode() and managers.blackmarket:equipped_mask().mask_id == tweak_data.achievement.cant_hear_you_scream.mask then
-				managers.achievment:award_progress(tweak_data.achievement.cant_hear_you_scream.stat)
-			end
-
-			mvector3.set(mvec_1, self._unit:position())
-			mvector3.subtract(mvec_1, attack_data.attacker_unit:position())
-			mvector3.normalize(mvec_1)
-			mvector3.set(mvec_2, self._unit:rotation():y())
-
-			local from_behind = mvector3.dot(mvec_1, mvec_2) >= 0
-
-			if is_cop and Global.game_settings.level_id == "nightclub" and attack_data.name_id and attack_data.name_id == "fists" then
-				managers.achievment:award_progress(tweak_data.achievement.final_rule.stat)
-			end
-
-			if is_civlian then
-				managers.money:civilian_killed()
-			elseif math.rand(1) < managers.player:upgrade_value("player", "melee_kill_snatch_pager_chance", 0) then
-				snatch_pager = true
-				self._unit:unit_data().has_alarm_pager = false
+			if unit_name then
+				managers.dyn_resource:load(ids_unit, Idstring(unit_name), managers.dyn_resource.DYN_RESOURCES_PACKAGE, nil)
+--				crim_mgr:safe_load_asset(character, unit_name, "deployable_id")
 			end
 		end
 	end
 
-	self:_check_melee_achievements(attack_data)
+	CriminalsManager.set_character_visual_state(unit, character_name, character_visual_state)
 
-	local hit_offset_height = math.clamp(attack_data.col_ray.position.z - self._unit:movement():m_pos().z, 0, 300)
-	local variant = nil
-
-	if result.type == "shield_knock" then
-		variant = 1
-	elseif result.type == "counter_tased" then
-		variant = 2
-	elseif result.type == "expl_hurt" then
-		variant = 4
-	elseif snatch_pager then
-		variant = 3
-	elseif result.type == "taser_tased" then
-		variant = 5
-	elseif dismember_victim then
-		variant = 6
-	elseif result.type == "healed" then
-		variant = 7
-	else
-		variant = 0
-	end
-
-	local body_index = self._unit:get_body_index(attack_data.col_ray.body:name())
-
-	self:_send_melee_attack_result(attack_data, damage_percent, damage_effect_percent, hit_offset_height, variant, body_index)
-	self:_on_damage_received(attack_data)
-
-	result.attack_data = attack_data
-
-	return result
+	self._character_visual_state = {
+		is_local_peer = false,
+		visual_seed = visual_seed,
+		player_style = user_player_style,
+		suit_variation = suit_variation,
+		glove_id = glove_id,
+		mask_id = mask_id,
+		armor_id = armor_id,
+		armor_skin = armor_skin,
+		deployable_id = deployable_id
+	}
 end
---]]
