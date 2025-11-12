@@ -25,13 +25,14 @@ function CopDamage:anim_execution_generic(unit,a)
 --		unit:movement():anim_clbk_force_ragdoll(unit)
 	elseif a == 8 then
 		unit:movement():anim_clbk_force_ragdoll(unit)
-		
+		--[[
 		local player = managers.player:local_player()
 		local mov_ext = alive(player) and player:movement()
 		local state = mov_ext and mov_ext:current_state()
 		if state then 
 			mov_ext:change_state("standard")
 		end
+		--]]
 		
 	end
 end

@@ -30,6 +30,8 @@
 					<key at="trigger" trigger="execution_punchthroat" callback="anim_execution_punchthroat" class_name="movement"/>
 					<key at="trigger" trigger="execution_grab" callback="anim_execution_grab" class_name="movement"/>
 					<key at="trigger" trigger="execution_kill" callback="anim_execution_kill" class_name="movement"/>
+					<key at="exit" 	  callback="anim_stop_execution" class_name="movement"/>
+					
 				</keys>
 				<exit name="std/spawn/loop"/>
 				<!--
@@ -98,7 +100,7 @@
 					<key at="trigger" trigger="execution_grab" callback="anim_execution_generic" class_name="character_damage" param1="3"/>
 					<key at="trigger" trigger="execution_kill" callback="anim_execution_generic" class_name="character_damage" param1="4"/>
 					
-					<key at="trigger" trigger="death" callback="anim_execution_generic" class_name="character_damage" param1="5"/>
+					<key at="trigger" trigger="death" callback="anim_clbk_force_ragdoll" class_name="movement" />
 					<key at="death" callback="anim_execution_generic" class_name="character_damage" param1="6"/>
 					
 					<key at="enter" callback="anim_execution_generic" class_name="character_damage" param1="7"/>
