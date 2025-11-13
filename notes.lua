@@ -34,7 +34,7 @@ check if custom state syncing will crash unmodded clients
 
 --managers.player:local_player():movement():current_state()._fwd_ray.unit:set_slot(0)
 
-BeardLib:AddUpdater("asdfljaksdljkf",function(t,dt)
+BeardLib:AddUpdater("glorykills_eyeaim_vis",function(t,dt)
 	if alive(GloryKills.unit) then
 		local obj = GloryKills.unit:get_object(Idstring("eyeAim"))
 		if obj then

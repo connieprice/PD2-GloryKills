@@ -1,4 +1,8 @@
+local DEBUG_DRAW_ENABLED = false
+
 PlayerStateExecution = PlayerStateExecution or class(PlayerStandard)
+
+
 
 --[[
 local inherits_list = {
@@ -226,6 +230,23 @@ end
 function PlayerStateExecution:enter(state_data,enter_data,...)
 	-- hide viewmodel
 	-- start anim
+		
+	if DEBUG_DRAW_ENABLED and BeardLib then
+		BeardLib:AddUpdater("glorykills_eyeaim_vis",function(t,dt)
+			if alive(GloryKills.unit) then
+				local obj = GloryKills.unit:get_object(Idstring("eyeAim"))
+				if obj then
+					Draw:brush(Color.red:with_alpha(0.5)):sphere(obj:position(),10)
+					
+					local rot = obj:rotation()
+					local fwd = rot:z()
+					local side = rot:x()
+					Draw:brush(Color.blue:with_alpha(0.5)):cylinder(obj:position(),obj:position()+(fwd * 100),2)
+					Draw:brush(Color.green:with_alpha(0.5)):cylinder(obj:position(),obj:position()+(side * 100),2)
+				end
+			end
+		end)
+	end
 	
 	PlayerStateExecution.super.enter(self,state_data,enter_data,...)
 	GloryKills.set_viewmodel_visible(self,false)
