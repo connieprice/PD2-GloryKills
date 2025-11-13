@@ -11,7 +11,8 @@ GloryKills.HUSK_NAMES = {
 	joy = "units/pd2_dlc_joy/characters/npc_criminals_joy_1/player_criminal_joy_husk"
 }
 -- copied this from third person mod. thanks hoppip
-function GloryKills:spawn_third_unit(unit,character_name,visual_seed,outfit_string)
+function GloryKills:spawn_third_unit(unit,character_name,visual_seed)
+
 	local SETTING_IMMERSIVE_FIRST_PERSON = true
 	local SETTING_CUSTOM_WEAPONS = false
 	local SETTING_START_IN_THIRD_PERSON = false
@@ -252,19 +253,20 @@ function GloryKills:spawn_third_unit(unit,character_name,visual_seed,outfit_stri
 	
 	
 	
-	
-	local loadout = managers.blackmarket:unpack_henchman_loadout_string(outfit_string)
-	local player_style = loadout and loadout.player_style or managers.blackmarket:get_default_player_style()
-	local suit_variation = loadout and loadout.suit_variation or "default"
-	local glove_id = loadout and loadout.glove_id or managers.blackmarket:get_default_glove_id()
+	local bm_mgr = managers.blackmarket
+-- for whatever reason, the outfit string parses incorrectly for me, and honestly it's unnecessary work anyway
+--	local loadout = managers.blackmarket:unpack_henchman_loadout_string(outfit_string)
+--	local player_style = loadout and loadout.player_style or managers.blackmarket:get_default_player_style()
+--	local suit_variation = loadout and loadout.suit_variation or "default"
+--	local glove_id = loadout and loadout.glove_id or managers.blackmarket:get_default_glove_id()
 	local visual_state = {
-		armor_skin = "none",
-		armor_id = "level_1",
+		armor_skin = tostring(bm_mgr:equipped_armor_skin() or "none"),
+		armor_id = tostring(bm_mgr:equipped_armor(true) or "level_1"),
 		visual_seed = visual_seed,
-		player_style = player_style,
-		suit_variation = suit_variation,
-		glove_id = glove_id,
-		mask_id = managers.blackmarket:equipped_mask().mask_id
+		player_style = tostring(bm_mgr:equipped_player_style()),
+		suit_variation = tostring(bm_mgr:get_suit_variation()),
+		glove_id = tostring(bm_mgr:equipped_glove_id()),
+		mask_id = tostring(bm_mgr:equipped_mask().mask_id)
 	}
 	self:upd_visual_state(character_name,visual_state)
 end
@@ -288,7 +290,8 @@ function GloryKills:Print(...)
 	if _G.Print then _G.Print(...) end
 end
 
-function GloryKills:upd_visual_state(character_name,visual_state) -- based on CriminalsManager:update_character_visual_state()
+function GloryKills:upd_visual_state(character_name,visual_state) -- based on CriminalsManager:update_character_visual_state() and CriminalsManager.set_character_visual_state()
+-- the reason for replacing it is so that this doesn't interfere with the character data
 	local unit = self.unit
 	
 	local ids_unit = Idstring("unit")
@@ -330,6 +333,7 @@ function GloryKills:upd_visual_state(character_name,visual_state) -- based on Cr
 		armor_skin = armor_skin,
 		deployable_id = deployable_id
 	}
+	self._character_visual_state = character_visual_state
 
 
 	if player_style then
@@ -365,7 +369,7 @@ function GloryKills:upd_visual_state(character_name,visual_state) -- based on Cr
 	end
 
 	CriminalsManager.set_character_visual_state(unit, character_name, character_visual_state)
-
+--[[
 	self._character_visual_state = {
 		is_local_peer = false,
 		visual_seed = visual_seed,
@@ -377,4 +381,5 @@ function GloryKills:upd_visual_state(character_name,visual_state) -- based on Cr
 		armor_skin = armor_skin,
 		deployable_id = deployable_id
 	}
+--]]
 end
