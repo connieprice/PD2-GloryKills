@@ -5,7 +5,7 @@ end
 local mvec_1 = Vector3()
 local mvec_2 = Vector3()
 
-function CopDamage:damage_melee(attack_data)
+Hooks:OverrideFunction(CopDamage,"damage_melee",function(self, attack_data)
 	if self._dead or self._invulnerable then
 		return
 	end
@@ -180,7 +180,7 @@ function CopDamage:damage_melee(attack_data)
 	result.attack_data = attack_data
 
 	return result
-end
+end)
 
 -- key trigger callbacks from anim
 function CopDamage:anim_execution_generic(unit,a)
