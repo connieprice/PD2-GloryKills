@@ -10,6 +10,27 @@ GloryKills.HUSK_NAMES = {
 	wild = "units/pd2_dlc_wild/characters/npc_criminals_wild_1/player_criminal_wild_husk",
 	joy = "units/pd2_dlc_joy/characters/npc_criminals_joy_1/player_criminal_joy_husk"
 }
+GloryKills.ALLOWED_PLAYER_STATES = {
+	standard = true,
+	carry = true,
+	execution = false, -- custom obviously
+	
+	empty = false,
+	mask_off = false,
+	bleed_out = false,
+	fatal = false,
+	arrested = false,
+	tased = false,
+	incapacitated = false,
+	clean = false,
+	civilian = false,
+	bipod = false,
+	driving = false,
+	jerry2 = false,
+	jerry1 = false,
+	player_turret = false
+}
+
 -- copied this from third person mod. thanks hoppip
 function GloryKills:spawn_third_unit(unit,character_name,visual_seed)
 

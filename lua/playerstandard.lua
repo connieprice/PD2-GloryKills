@@ -158,9 +158,16 @@ Hooks:OverrideFunction(PlayerStandard,"_do_melee_damage",function(self, t, bayon
 			
 --vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 			local dmg_ext = hit_unit:character_damage()
+			local my_mov_ext = self._ext_movement
+			local my_pos = my_mov_ext:m_pos()
+			local my_rot = self._ext_camera:rotation()
+			local look_mov = Rotation(my_rot:yaw(),0,0)
+			local hit_mov_ext = hit_unit:movement()
+			
 			local execution_variant
 			local is_execution = not (self:in_air() or self:ducking() or self:on_ladder() or self:_on_zipline())
 			is_execution = is_execution and managers.enemy:is_enemy(hit_unit) and not managers.enemy:is_civilian(hit_unit)
+			
 			
 			if is_execution and hit_unit:in_slot(25,26) then -- sentry guns not allowed >:(
 				--log("Sentry guns cannot be executed")
@@ -177,11 +184,14 @@ Hooks:OverrideFunction(PlayerStandard,"_do_melee_damage",function(self, t, bayon
 				is_execution = false
 			end
 			
-			local my_mov_ext = self._ext_movement
-			local my_pos = my_mov_ext:m_pos()
-			local my_rot = self._ext_camera:rotation()
-			local look_mov = Rotation(my_rot:yaw(),0,0)
-			local hit_mov_ext = hit_unit:movement()
+			-- filter out invalid states (driving, bipod, etc)
+			-- not that you can melee in those.
+			-- but since PlayerStandard is the parent state used as a template for a lot of state classes,
+			-- it's prudent to filter them manually
+			if is_execution and not GloryKills.ALLOWED_PLAYER_STATES[my_mov_ext:current_state_name() or ""] then
+				is_execution = false
+			end
+			
 			if is_execution then
 				
 				-- detect hits from behind
