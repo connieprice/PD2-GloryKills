@@ -256,6 +256,10 @@ function PlayerStateExecution:_enter(enter_data,...)
 	PlayerStateExecution.super._enter(self,enter_data,...)
 end
 
+function PlayerStateExecution:on_execution_complete()
+	self._ext_movement:change_state(self._state_data.execution_prev_state or "standard")
+end
+
 function PlayerStateExecution:exit(state_data,...)
 	self._state_data.melee_attack_wanted = nil
 	self._state_data.melee_attack_allowed_t = nil

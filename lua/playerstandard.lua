@@ -289,9 +289,8 @@ _G.testhook = function(self, t, input,...)
 					hit_mov_ext:set_rotation(look_mov)
 					hit_mov_ext:set_position(mvector3.copy(my_pos))
 					self._state_data.execution_unit = hit_unit
-					
+					self._state_data.execution_prev_state = my_mov_ext:current_state_name() or "standard"
 					my_mov_ext:change_state("execution")
-					
 					
 				-- disable the melee that would otherwise occur on this frame
 					self._state_data.melee_attack_wanted = nil
