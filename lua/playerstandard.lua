@@ -223,7 +223,7 @@ Hooks:OverrideFunction(PlayerStandard,"_do_melee_damage",function(self, t, bayon
 				})
 			end
 			hit_mov_ext._execution_variant = execution_variant
-			Print("execution_variant",execution_variant)
+--			Print("execution_variant",execution_variant)
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 			local action_data = {
 				variant = "melee",
