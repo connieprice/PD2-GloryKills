@@ -1,6 +1,6 @@
-<mod name="Glory Kills" author="PlayBonk and Offyerrocker" color="Color(0.9,0.9,0.5)">
+<mod name="Glory Kills" author="PlayBONK and Offyerrocker" color="Color(0.9,0.9,0.5)">
 	<!--
-	<AssetUpdates id="-10000" version="1.0.0" provider="modworkshop" install_directory = "mods/" version_is_number="false"/>
+	<AssetUpdates id="54364" version="0.0.1" provider="modworkshop" install_directory = "mods/" version_is_number="false"/>
 	<Localization directory="l10n" default="english.json">
 		<loc file="english.json" language="english" />
 	</Localization>
