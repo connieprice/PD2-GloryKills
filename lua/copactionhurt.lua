@@ -225,7 +225,7 @@ function CopActionHurt:init(action_desc, common_data)
 		end
 	elseif action_type == "death" and action_desc.variant == "execution" then
 -- EXECUTION VARIANT
-		local variant = self._ext_movement._execution_variant or "var1" --action_desc.execution_variant or "var1"
+		local variant = self._ext_movement._execution_variant 
 		--log("Execution variant:",variant)
 		local weapon_unit = action_desc.weapon_unit
 		if self._ext_anim.ragdoll and not self._ext_anim.hurt_fire or self._ext_movement:died_on_rope() then
@@ -241,8 +241,9 @@ function CopActionHurt:init(action_desc, common_data)
 
 				return
 			end
-			
-			self._machine:set_parameter(redir_res, variant, 1)
+			if variant then
+				self._machine:set_parameter(redir_res, variant, 1)
+			end
 		end
 
 	elseif action_type == "death" and action_desc.variant == "fire" then

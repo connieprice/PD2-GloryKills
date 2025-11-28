@@ -21,17 +21,30 @@
 		
 		<target mode="attach">
 			<state name="std/stand/execution" type="mix" segment="base" speed="1.0">
-				<param name="var1" value="0"/>
-				<param name="var2" value="0"/>
-				<anim name="heister_execution_front" weight="var1"/>
-				<anim name="heister_execution_rear" weight="var2"/>
+				<param name="front_hand_var1" value="0"/>
+				<param name="rear_hand_var1" value="0"/>
+				<param name="front_knife_var1" value="0"/>
+				<param name="rear_knife_var1" value="0"/>
+				<param name="front_axe_var1" value="0"/>
+				<param name="rear_axe_var1" value="0"/>
+				<anim name="heister_execution_front" weight="front_hand_var1"/>
+				<anim name="heister_execution_rear" weight="rear_hand_var1"/>
+				<anim name="heister_execution_knife_front" weight="front_knife_var1"/>
+				<anim name="heister_execution_knife_rear" weight="rear_knife_var1"/>
+				<anim name="heister_execution_axe_front" weight="front_axe_var1"/>
+				<anim name="heister_execution_axe_rear" weight="rear_axe_var1"/>
 				<keys>
-					<key at="trigger" trigger="execution_slap" callback="anim_execution_slap" class_name="movement"/>
-					<key at="trigger" trigger="execution_punchthroat" callback="anim_execution_punchthroat" class_name="movement"/>
-					<key at="trigger" trigger="execution_grab" callback="anim_execution_grab" class_name="movement"/>
-					<key at="trigger" trigger="execution_kill" callback="anim_execution_kill" class_name="movement"/>
+					<key at="enter"    	callback="anim_execution_spawn_melee_prop"     class_name="movement" param1="a_weapon_right_front" param2="melee_weapon_prop"/>
+					<key at="trigger" trigger="execution_slap" 		callback="play_execution_sound_equipped" 	class_name="movement" param1="hit_gen" param2="1" />
+					<key at="trigger" trigger="execution_slap" 		callback="play_execution_sound" 			class_name="movement" param1="hit_gen" param2="1" />
+					<key at="trigger" trigger="execution_punch" 	callback="play_execution_sound" 			class_name="movement" param1="hit_body" param2="1" />
+					<key at="trigger" trigger="execution_punch" 	callback="play_execution_sound_equipped" 	class_name="movement" param1="hit_body" param2="1" />
+					<key at="trigger" trigger="execution_grab" 		callback="play_execution_sound" 			class_name="movement" param1="hit_gen" param2="1" />
+					<key at="trigger" trigger="execution_grab" 		callback="play_execution_sound_equipped" 	class_name="movement" param1="hit_gen" param2="1" />
+					<key at="trigger" trigger="execution_kill" 		callback="play_execution_sound" 			class_name="movement" param1="hit_body" param2="1" />
+					<key at="trigger" trigger="execution_kill" 		callback="play_execution_sound_equipped" 	class_name="movement" param1="hit_body" param2="1" />
+					<key at="exit"    callback="anim_clbk_unspawn_execution_melee_prop"     class_name="movement" param0="melee_weapon_prop"/>
 					<key at="exit" 	  callback="anim_stop_execution" class_name="movement"/>
-					
 				</keys>
 				<exit name="std/spawn/loop"/>
 				<!--
@@ -89,11 +102,18 @@
 		
 		<target mode="attach">
 			<state name="std/death/execution" type="mix" segment="base">
-				<param name="var1" value="0"/>
-				<param name="var2" value="0"/>
-				<anim name="gen_death_execution_front" weight="var1"/>
-				<anim name="gen_death_execution_rear" weight="var2"/>
-				<keys timebase="relative"> <!-- should this be "frames" or "relative"? -->
+				<param name="front_hand_var1" value="0"/>
+				<param name="rear_hand_var1" value="0"/>
+				<param name="front_knife_var1" value="0"/>
+				<param name="rear_knife_var1" value="0"/>
+				
+				<anim name="gen_death_execution_front" weight="front_hand_var1"/>
+				<anim name="gen_death_execution_rear" weight="rear_hand_var1"/>
+				<anim name="gen_death_execution_knife_front" weight="front_knife_var1"/>
+				<anim name="gen_death_execution_knife_rear" weight="rear_knife_var1"/>
+				<anim name="gen_death_execution_axe_front" weight="front_axe_var1"/>
+				<anim name="gen_death_execution_axe_rear" weight="rear_axe_var1"/>
+				<keys timebase="relative">
 					
 					<key at="trigger" trigger="execution_slap" callback="anim_execution_generic" class_name="character_damage" param1="1"/>
 					<key at="trigger" trigger="execution_punch" callback="anim_execution_generic" class_name="character_damage" param1="2"/>

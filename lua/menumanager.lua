@@ -30,6 +30,124 @@ GloryKills.ALLOWED_PLAYER_STATES = {
 	jerry1 = false,
 	player_turret = false
 }
+GloryKills._execution_types_by_melee = { --lookup table for the execution variant, by melee id
+	fireaxe = "axe",
+	beardy = "axe",
+	rambo = "knife",
+	chef = "knife",
+	fairbair = "knife",
+	kabartanto = "knife",
+	kabar = "knife",
+	toothbrush = "knife",
+	kampfmesser = "knife",
+	gerber = "knife",
+	becker = "knife",
+	bayonet = "knife",
+	x46 = "knife",
+	bowie = "knife",
+	switchblade = "knife",
+	scoutknife = "knife",
+	pugio = "knife",
+	shawn = "knife",
+	ballistic = "knife",
+	wing = "knife",
+	grip = "knife"
+}
+
+--[[
+"machete"
+"bats" 
+"baton"
+"daggers"
+"spears"
+"uniques"
+--]]
+
+GloryKills._execution_anim_conditions = {
+	axe = {
+		front = {
+			"front_axe_var1"
+		},
+		rear = {
+			"rear_axe_var1"
+		}
+	},
+	knife = {
+		front = {
+			"front_knife_var1"
+		},
+		rear = {
+			"rear_knife_var1"
+		}
+	},
+	machete = {
+		front = {
+--			"front_hand_var1",
+		},
+		rear = {
+--			"rear_hand_var1"
+		}
+	},
+	bats = { -- inconsistent plural case, i know. it's just to distinguish "bat" from "baton" and make it more searchable
+		front = {},
+		rear = {}
+	},
+	baton = {
+		front = {},
+		rear = {}
+	},
+	daggers = {
+		front = {},
+		rear = {}
+	},
+	spears = {
+		front = {},
+		rear = {}
+	},
+	uniques = {
+		front = {},
+		rear = {}
+	}
+}
+
+
+function GloryKills:get_execution_variant(params)
+	local variant = params.variant
+	local from_behind = params.from_behind
+	local conditions = self._execution_anim_conditions[variant]
+	if conditions then
+		if from_behind and #conditions.rear > 0 then
+			return conditions.rear[math.random(#conditions.rear)]
+		else
+			-- assume that front is the "default" (if from_behind is false or not specified) and that there are always front anims defined
+			return conditions.front[math.random(#conditions.front)]
+		end
+	end
+	
+	-- ruh roh rhaggy! fallback to defauls
+	if from_behind then
+		return "rear_hand_var1"
+	else
+		return "front_hand_var1"
+	end
+end
+
+--[[ playbonk's original notes on melee types
+local axes = {"fireaxe","beardy"}
+local knives = {"rambo","chef","fairbair","kabartanto","kabar","toothbrush","kampfmesser","gerber","becker","bayonet","x46","bowie","switchblade","scoutknife","pugio","shawn","ballistic","wing","grip"}
+local machetes = nil --for machetes and small axes
+local bats = nil --bats and shit like the ruler will be here
+local batons = nil --batons and the morningstar will be here
+local daggers = nil --stabby stab knives and things like syringe and kunai will be here, including fairbair and switchblade
+local spears = nil --mainly for the flag and the pitchfork
+
+local uniques = nil --briefcase, money bundle, roaming frothing madness of a chainsaw, sledgehammer, katana, great sword, sai, probably the axes should be here too later
+
+--]]
+
+function GloryKills:get_execution_type_by_melee(melee_id)
+	return self._execution_types_by_melee[melee_id]
+end
 
 -- copied this from third person mod. thanks hoppip
 function GloryKills:spawn_third_unit(unit,character_name,visual_seed)

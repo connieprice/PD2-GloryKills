@@ -36,7 +36,7 @@ Hooks:OverrideFunction(PlayerStandard,"_do_melee_damage",function(self, t, bayon
 	end
 
 	if col_ray and alive(col_ray.unit) then
-		local damage, damage_effect = managers.blackmarket:equipped_melee_weapon_damage_info(charge_lerp_value)
+		local damage, damage_effect = managers.blackmarket:equipped_melee_weapon_damage_info(charge_lerp_value)		
 		local damage_effect_mul = math.max(managers.player:upgrade_value("player", "melee_knockdown_mul", 1), managers.player:upgrade_value(self._equipped_unit:base():weapon_tweak_data().categories and self._equipped_unit:base():weapon_tweak_data().categories[1], "melee_knockdown_mul", 1))
 		damage = damage * managers.player:get_melee_dmg_multiplier()
 		damage_effect = damage_effect * damage_effect_mul
@@ -168,7 +168,6 @@ Hooks:OverrideFunction(PlayerStandard,"_do_melee_damage",function(self, t, bayon
 			local is_execution = not (self:in_air() or self:ducking() or self:on_ladder() or self:_on_zipline())
 			is_execution = is_execution and managers.enemy:is_enemy(hit_unit) and not managers.enemy:is_civilian(hit_unit)
 			
-			
 			if is_execution and hit_unit:in_slot(25,26) then -- sentry guns not allowed >:(
 				--log("Sentry guns cannot be executed")
 				is_execution = false
@@ -217,20 +216,18 @@ Hooks:OverrideFunction(PlayerStandard,"_do_melee_damage",function(self, t, bayon
 
 				local from_behind = mvector3.dot(mvec_1, mvec_2) >= 0
 				-- set animation variant
-				if from_behind then
-					--log("From behind")
-					execution_variant = "var2"
-				else
-					--log("From front")
-					execution_variant = "var1"
-				end
+				
+				execution_variant = GloryKills:get_execution_variant({
+					variant = GloryKills:get_execution_type_by_melee(melee_entry),
+					from_behind = from_behind
+				})
 			end
-			
 			hit_mov_ext._execution_variant = execution_variant
+			Print("execution_variant",execution_variant)
 --^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 			local action_data = {
 				variant = "melee",
-				is_execution = is_execution
+				is_execution = execution_variant and is_execution
 --				,execution_variant = execution_variant
 			}
 
@@ -258,7 +255,7 @@ Hooks:OverrideFunction(PlayerStandard,"_do_melee_damage",function(self, t, bayon
 				}
 				local stack = self._state_data.stacking_dmg_mul.melee
 
-				if character_unit:character_damage().dead and not character_unit:character_damage():dead() then
+				if dmg_ext.dead and not dmg_ext:dead() then
 					stack[1] = t + managers.player:upgrade_value("melee", "stacking_hit_expire_t", 1)
 					stack[2] = math.min(stack[2] + 1, tweak_data.upgrades.max_melee_weapon_dmg_mul_stacks or 5)
 				else

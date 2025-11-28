@@ -9,8 +9,17 @@
 	<AddFiles directory="assets">
 		<animation path="anims/shared/rifle/generic/heister_execution_front" />
 		<animation path="anims/shared/rifle/generic/heister_execution_rear" />
+		<animation path="anims/shared/rifle/generic/heister_execution_knife_front" />
+		<animation path="anims/shared/rifle/generic/heister_execution_knife_rear" />
+		<animation path="anims/shared/rifle/generic/heister_execution_axe_front" />
+		<!--<animation path="anims/shared/rifle/generic/heister_execution_axe_rear" />-->
+		
 		<animation path="anims/shared/rifle/generic/gen_death_execution_front" />
 		<animation path="anims/shared/rifle/generic/gen_death_execution_rear" />
+		<animation path="anims/shared/rifle/generic/gen_death_execution_knife_front" />
+		<animation path="anims/shared/rifle/generic/gen_death_execution_knife_rear" />
+		<animation path="anims/shared/rifle/generic/gen_death_execution_axe_front" />
+		<!--<animation path="anims/shared/rifle/generic/gen_death_execution_axe_rear" />-->
 	</AddFiles>
 	
 </mod>
