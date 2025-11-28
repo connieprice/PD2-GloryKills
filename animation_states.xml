@@ -27,12 +27,17 @@
 				<param name="rear_knife_var1" value="0"/>
 				<param name="front_axe_var1" value="0"/>
 				<param name="rear_axe_var1" value="0"/>
+				<param name="front_hatchet_var1" value="0"/>
+				<param name="rear_hatchet_var1" value="0"/>
+				
 				<anim name="heister_execution_front" weight="front_hand_var1"/>
 				<anim name="heister_execution_rear" weight="rear_hand_var1"/>
 				<anim name="heister_execution_knife_front" weight="front_knife_var1"/>
 				<anim name="heister_execution_knife_rear" weight="rear_knife_var1"/>
 				<anim name="heister_execution_axe_front" weight="front_axe_var1"/>
 				<anim name="heister_execution_axe_rear" weight="rear_axe_var1"/>
+				<anim name="heister_execution_hatchet_front" weight="front_hatchet_var1"/>
+				<anim name="heister_execution_hatchet_rear" weight="rear_hatchet_var1"/>
 				<keys>
 					<key at="enter"    	callback="anim_execution_spawn_melee_prop"     class_name="movement" param1="a_weapon_right_front" param2="melee_weapon_prop"/>
 					<key at="trigger" trigger="execution_slap" 		callback="play_execution_sound_equipped" 	class_name="movement" param1="hit_gen" param2="1" />
@@ -106,6 +111,8 @@
 				<param name="rear_hand_var1" value="0"/>
 				<param name="front_knife_var1" value="0"/>
 				<param name="rear_knife_var1" value="0"/>
+				<param name="front_hatchet_var1" value="0"/>
+				<param name="rear_hatchet_var1" value="0"/>
 				
 				<anim name="gen_death_execution_front" weight="front_hand_var1"/>
 				<anim name="gen_death_execution_rear" weight="rear_hand_var1"/>
@@ -113,6 +120,8 @@
 				<anim name="gen_death_execution_knife_rear" weight="rear_knife_var1"/>
 				<anim name="gen_death_execution_axe_front" weight="front_axe_var1"/>
 				<anim name="gen_death_execution_axe_rear" weight="rear_axe_var1"/>
+				<anim name="gen_death_execution_hatchet_front" weight="front_hatchet_var1"/>
+				<anim name="gen_death_execution_hatchet_rear" weight="rear_hatchet_var1"/>
 				<keys timebase="relative">
 					
 					<key at="trigger" trigger="execution_slap" callback="anim_execution_generic" class_name="character_damage" param1="1"/>

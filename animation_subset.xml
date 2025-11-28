@@ -10,6 +10,8 @@
 		<target mode="attach">
 			<anim name="heister_execution_front" file="anims/shared/rifle/generic/heister_execution_front" blend_set="all"/>
 			<anim name="heister_execution_rear" file="anims/shared/rifle/generic/heister_execution_rear" blend_set="all"/>
+			<anim name="heister_execution_hatchet_front" file="anims/shared/rifle/generic/heister_execution_hatchet_front" blend_set="all"/>
+			<anim name="heister_execution_hatchet_rear" file="anims/shared/rifle/generic/heister_execution_hatchet_rear" blend_set="all"/>
 			<anim name="heister_execution_knife_front" file="anims/shared/rifle/generic/heister_execution_knife_front" blend_set="all"/>
 			<anim name="heister_execution_knife_rear" file="anims/shared/rifle/generic/heister_execution_knife_rear" blend_set="all"/>
 			<anim name="heister_execution_axe_front" file="anims/shared/rifle/generic/heister_execution_axe_front" blend_set="all"/>
@@ -26,6 +28,8 @@
 		<target mode="attach">
 			<anim name="gen_death_execution_front" file="anims/shared/rifle/generic/gen_death_execution_front" blend_set="all"/>
 			<anim name="gen_death_execution_rear" file="anims/shared/rifle/generic/gen_death_execution_rear" blend_set="all"/>
+			<anim name="heister_execution_hatchet_front" file="anims/shared/rifle/generic/heister_execution_hatchet_front" blend_set="all"/>
+			<anim name="heister_execution_hatchet_rear" file="anims/shared/rifle/generic/heister_execution_hatchet_rear" blend_set="all"/>
 			<anim name="gen_death_execution_knife_front" file="anims/shared/rifle/generic/gen_death_execution_knife_front" blend_set="all"/>
 			<anim name="gen_death_execution_knife_rear" file="anims/shared/rifle/generic/gen_death_execution_knife_rear" blend_set="all"/>
 			<anim name="gen_death_execution_axe_front" file="anims/shared/rifle/generic/gen_death_execution_axe_front" blend_set="all"/>

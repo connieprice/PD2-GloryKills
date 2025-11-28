@@ -33,6 +33,7 @@ GloryKills.ALLOWED_PLAYER_STATES = {
 GloryKills._execution_types_by_melee = { --lookup table for the execution variant, by melee id
 	fireaxe = "axe",
 	beardy = "axe",
+	
 	rambo = "knife",
 	chef = "knife",
 	fairbair = "knife",
@@ -51,19 +52,17 @@ GloryKills._execution_types_by_melee = { --lookup table for the execution varian
 	shawn = "knife",
 	ballistic = "knife",
 	wing = "knife",
-	grip = "knife"
+	grip = "knife",
+	
+	cleaver = "hatchet",
+	meat_cleaver = "hatchet",
+	bullseye = "hatchet",
+	oxide = "hatchet",
+	scalper = "hatchet"
+	
 }
 
---[[
-"machete"
-"bats" 
-"baton"
-"daggers"
-"spears"
-"uniques"
---]]
-
-GloryKills._execution_anim_conditions = {
+GloryKills._execution_anim_conditions = { -- vars used for both enemy death and player execution
 	axe = {
 		front = {
 			"front_axe_var1"
@@ -71,6 +70,10 @@ GloryKills._execution_anim_conditions = {
 		rear = {
 			"rear_axe_var1"
 		}
+	},
+	hatchet = {
+		front = {},
+		rear = {}
 	},
 	knife = {
 		front = {
@@ -109,7 +112,6 @@ GloryKills._execution_anim_conditions = {
 		rear = {}
 	}
 }
-
 
 function GloryKills:get_execution_variant(params)
 	local variant = params.variant
