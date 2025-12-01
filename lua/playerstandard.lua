@@ -186,7 +186,7 @@ Hooks:OverrideFunction(PlayerStandard,"_do_melee_damage",function(self, t, bayon
 			if is_execution and char_base and char_base.has_tag then
 				if char_base:has_tag("shield") or char_base:has_tag("phalanx_vip") or char_base:has_tag("phalanx_minion") then
 					-- exclude shields, winters, and phalanx shields
-					return 
+					is_execution = false
 				end
 				
 				-- special variations (for later)
